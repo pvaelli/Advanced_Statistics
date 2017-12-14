@@ -1,0 +1,365 @@
+In Class Assignment 2
+=====================
+
+Vectors
+-------
+
+You can also store vectors of information, which contains a number of data points.
+You build vectors with the ```c()``` function, like so:
+
+`c(1,2,3,4)`
+
+You can store these vectors in a variable
+
+```{r}
+a = c(1,2,3)
+```
+
+You can even combine two vectors with c()
+```{r}
+b = c(4,5,6)
+c(a,b)
+```
+
+You can edit a vector with the following command
+
+`fix(a)`
+
+You can only store one type of data in a vector.
+If you try to mix types, it will force the data to get along.
+In the case below, it will make the numbers into characters.
+
+```{r}
+c(1,2,'a')
+```
+
+Let's say you want to make a vectors of the number 1 to 10 - you could type this out the long way
+
+`c(1,2,3,4,5,6,7,8,9,10)`
+
+But that's a lot of work - there's an easier way.
+The x:y operator returns a vector of values from x to y.
+
+`1:10`
+
+You can also use the seq() function to do the same thing.
+
+`seq(1,10, by = 1)`
+
+Note the use of 'by = 1',
+sometimes functions will have a lot of different inputs, some of which don't need to be used.
+By 'naming' the arguments, you make sure you're giving input correctly (and making your code easier to read).
+In this case, 'by' doesn't need to be used at all (the default is 1 if nothing is entered):
+```{r}
+seq(1,10)
+```
+
+So why use 'seq' instead of ':'? Because it's more flexible.
+Let's say we wanted all of the one digit odd numbers...
+That's just the numbers from 1 to 9, incrementing by 2 each time:
+```{r}
+seq(1,9,by = 2)
+```
+
+
+
+Or let's say we want all of the numbers divisible by 5 from 0 to 100
+```{r}
+seq(0,100,by = 5)
+```
+
+Or we want to count backwards by 2 from 20
+```{r}
+seq(20,0,by = -2)
+```
+
+But let's say we don't want to count, we just want a vector with 1 repeated 10 times.
+There's a function for that - rep()
+```{r}
+rep(1,times = 10)
+```
+
+You can also repeat vectors
+```{r}
+rep(c(1,2),times = 5)
+```
+
+Note that this gives you 1,2,1,2,...
+If we want 1,1,1,1,1,2,2,2,2,2 there's the 'each' argument
+```{r}
+rep(c(1,2),each = 5)
+```
+
+You might still be curious why the [1] is at the start of all output.
+It's because R is a 'vectorized' language - all variables are stored in vectors
+Even single numbers are vectors of length 1.
+The [1] tells you where in the vector you are starting on that line.
+
+Sometimes you might have a longer vector - this helps to orient where in the vector you are.
+In the example below, note that if the second line starts with [18], that line starts with the 18th entry in the vector.
+```{r}
+1:100
+```
+
+Now let's assign a few vectors to play around with
+```{r}
+v.1 = 1:5
+v.2 = seq(2,10, by = 2)
+v.3 = c(3,7,9,1)
+```
+
+If you want to access individual vector items, you can do that too if you know the number.
+For instance, to get the first element of v.1, you would type:
+```{r}
+v.1[1]
+```
+
+For the third, type:
+```{r}
+v.1[3]
+```
+
+
+
+Note that to do this, you put square brackets after the vector, and give the index of the value you want to get.
+Indices start at 1 in R, and go through the length of the vector.
+If you try to access a number with an index that's out of bounds, it will return an NA value:
+```{r}
+v.1[10]
+```
+
+There are also a few basic functions you should know on vectors:
+
+First, the ```length()``` function tells you how long a vector is (e.g., how many data points it holds)
+```{r}
+length(v.1)
+```
+
+Next, you can add everything in a vector together with sum()
+```{r}
+v.2
+sum(v.2)
+2 + 4 + 6 + 8 + 10
+```
+
+You can also find the average value in a vector with mean()
+```{r}
+mean(v.2)
+```
+
+Or find the lowest value with min() or highest with max()
+```{r}
+min(v.2)
+max(v.2)
+```
+
+You can also sort a list from smallest to largest with sort()
+```{r}
+v.3
+sort(v.3)
+```
+
+Or sort from largest to smallest by telling the function that decreasing = TRUE
+```{r}
+sort(v.3, decreasing = TRUE)
+```
+
+If you have two vectors of the same length, you can add all of the elements together in a piecewise function with +
+```{r}
+v.1
+v.2
+v.2 + v.1
+```
+
+Other mathematical operators work the same way:
+```{r}
+v.2 - v.1
+v.2 * v.1
+v.2 / v.1
+```
+
+You can also add/subtract/multiply/etc. a single number to each entry in the vector
+```{r}
+v.1 + 2
+v.1 * 2
+```
+
+Or test each element of a vector - this returns a vector of logicals
+```{r}
+v.1 >= 3
+```
+
+Want to know how many of the vector elements pass the conditional? Use sum()!
+```{r}
+sum(v.1 >= 3)
+```
+
+It's also possible to do arithmetic on vectors of unequal lengths - but THIS IS BAD!
+R will 'recycle' the shorter vector, and repeat it so that it matches the longer one
+```{r}
+v.3 + c(1,2)
+```
+
+This will be the same as:
+```{r}
+v.3 + c(1,2,1,2)
+```
+
+I'm going to reiterate: *THIS IS BAD!*
+
+In the rare case that you actually want to recycle vectors, you should use the rep() function.
+For instance:
+```{r}
+v.3 + rep(c(1,2),times = 2)
+```
+
+This makes it easier to see what is going on and thus makes it more difficult for unwanted errors to slip in.
+So don't let R recycle your vectors - ever!
+
+Vectors and slicing
+-------------------
+
+Recall in the last lesson that you can create vectors with the c() command and access individual items by index
+```{r}
+junk.vector = c(2,6,4,10,8)
+junk.vector[3] # Should be 4 - the item in the third position
+```
+
+But lets say you wanted a larger slice of the vector - perhaps the first three values.
+You can get these in one swoop using the range 1:3
+```{r}
+junk.vector[1:3] # 2, 6, 4
+```
+
+Or the last three items in the vector
+```{r}
+junk.vector[3:5] # 4, 10, 8
+```
+
+But if we don't know exactly how long the vector is, we using the length function.
+This tells it to get back all items from index (length-2) to the end (length)
+```{r}
+junk.vector[(length(junk.vector)-2):length(junk.vector)] # 4, 10, 8
+```
+
+Note the parentheses... if you don't use them, this will solve as length - (2:length) which becomes 3:0...
+```{r}
+junk.vector[length(junk.vector)-2:length(junk.vector)]
+junk.vector[3:0] # 4, 6, 2 (position 0 is ignored)
+```
+
+
+Likewise, you can get all items EXCEPT certain indices using negative values.
+For instance, if you want everything but the first entry, you would write
+```{r}
+junk.vector[-1] # 6, 4, 10, 8
+```
+
+And if you want everything except entries 2 through 4, you would write:
+```{r}
+junk.vector[-2:-4] # 2, 8
+```
+
+You can also 'name' vector entries using the names() command.
+By default all names are null... you can check this:
+```{r}
+names(junk.vector)
+```
+
+But you can then set the names by assigning a vector of names to that command:
+```{r}
+names(junk.vector) = c("Alan","Barbara","Cathryn","Dylan","Eric")
+```
+
+Now the vector prints with names
+```{r}
+junk.vector
+```
+
+You can also check the names directly again
+```{r}
+names(junk.vector)
+```
+
+And now you can pull from the vector by name
+```{r}
+junk.vector["Dylan"]
+```
+
+Or multiple names
+```{r}
+junk.vector[c('Alan','Eric')]
+```
+
+Or erase the names
+```{r}
+names(junk.vector) = NULL
+junk.vector
+```
+
+You can also get only values that satisfy a conditional by placing that conditional in the brackets.
+For instance, say you wanted only the values in ```junk.vector``` that are greater than 5:
+```{r}
+junk.vector[junk.vector > 5]
+```
+
+This works because you get a vector of logicals out of ```junk.vector > 5```
+
+```{r}
+junk.vector > 5 # F T F T T
+```
+
+And when you access a vector with a vector of equal length logicals, it returns just the TRUE ones
+```{r}
+junk.vector[c(FALSE,TRUE,FALSE,TRUE,TRUE)]
+```
+
+This works just as well for conditionals from other vectors
+```{r}
+cond.vector = c("Red","Blue","Red","Blue","Green")
+cond.vector == "Red" # T F T F F
+junk.vector[cond.vector == "Red"]
+```
+
+On top of just indexing data in a vector, you might want to change it.
+If you want to change a single index, this is easy - you just assign to that index
+```{r}
+junk.vector
+junk.vector[3] = 7
+junk.vector
+```
+
+You can also assign to a range of indices
+```{r}
+junk.vector[2:4] = c(8,10,2)
+junk.vector
+```
+
+Note that you must be careful that the length of the sub-vector you are overwriting is the same length as what you feed it.
+Recycling will occur otherwise, and I hope I don't have you remind you how bad that is.
+Seriously... don't do it.
+
+You might also want to assign a value to everything that satisfies a given condition.
+This might happen if you want to enact a ceiling/floor, or code for error data.
+For instance, what if we want anything greater than 9 in junk.vector to be set to 9 (a ceiling)?
+```{r}
+junk.vector[junk.vector > 9] = 9
+junk.vector
+```
+
+Ungraded Self Assessment
+------------------------
+Make a vector of the classes you've taken (in order), including 851.
+```{r}
+courses <- c("CSE 891", "ZOL801", "ZOL896", "ZOL832", "ZOL849", "MMG801", "ZOL827", "STT814", "ZOL851", "BLD870", "NSC820", "ZOL999")
+```
+
+Make a new vector from the old that only includes graduate level classes (500 level and above):
+```{r}
+courses_above_850 
+```
+
+Slice the original vector to exclude the classes you are currently in.
+```{r}
+#Your Code Here
+```

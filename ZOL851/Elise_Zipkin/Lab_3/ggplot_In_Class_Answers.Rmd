@@ -1,0 +1,147 @@
+```{r global_options, include=FALSE}
+library(ggplot2)
+```
+In-class worksheet on ggplot
+============================
+September 29, 2015
+
+Plotting the iris data set
+--------------------------
+Make a scatter plot of petal length vs. sepal length for the three species. Then do the same plot but facet by species instead of coloring.
+```{r }
+ggplot(iris, aes(x=Sepal.Length, y=Petal.Length, color=Species)) + geom_point()
+
+ggplot(iris, aes(x=Sepal.Length, y=Petal.Length)) + geom_point() + facet_wrap(~Species)
+```
+
+Make side-by-side boxplots of sepal lengths for the three species of iris. The geom you need to use is `geom_boxplot()`. See if you can guess the correct aesthetic mapping.
+```{r}
+ggplot(iris, aes(y=Sepal.Length, x=Species)) + geom_boxplot() 
+```
+
+Plotting tree-growth data
+-------------------------
+The data set `Sitka` from the MASS package contains repeated measurements of tree size for 79 Sitka spruce trees, which were grown either in ozone-enriched chambers or under control conditions.
+
+```{r}
+library(MASS) # we need to load the MASS library to have access to this dataset
+head(Sitka)
+```
+
+Make line plots of tree size vs. time, for each tree, faceted  by treatment. First, use the same color for all lines.
+```{r}
+ggplot(Sitka, aes(x=Time, y=size, group=tree)) + geom_line() + facet_wrap(~treat)
+```
+
+Then, color by tree.
+```{r}
+ggplot(Sitka, aes(x=Time, y=size, color=tree, group=tree)) + geom_line() + facet_wrap(~treat)
+```
+
+Finally, color by size.
+```{r}
+ggplot(Sitka, aes(x=Time, y=size, color=size, group=tree)) + geom_line() + facet_wrap(~treat)
+```
+
+
+2d Distributions
+----------------
+
+Show the 2d distribution of petal length vs. sepal length in the `iris` dataset, by making an x-y plot that shows the individual data points as well as contour lines indicating the density of points in a given spatial region. Hint look at ```geom_density2d```
+```{r}
+ggplot(iris, aes(x=Sepal.Length, y=Petal.Length, color=Species)) + geom_point() + geom_density2d()
+```
+
+If this was still easy, now instead of contour lines add a fitted straight black line (not a curve, and no confidence band!) to each group of points.
+```{r}
+ggplot(iris, aes(x=Sepal.Length, y=Petal.Length, color=Species)) + geom_point() + geom_smooth(aes(group=Species), method=lm, color='black', se=F)
+```
+In this last example, because we are manually overriding the color of the lines, we need to set the group aesthetic to tell ggplot2 to draw a separate line for each species.
+
+
+Bar plots
+---------
+The MASS package contains a data set `bacteria` which contains data from tests of the presence of the bacterium H. influenzae in children with otitis media in the Northern Territory of Australia. We are interested in two columns of this data set: `y` reports presence (`y`) or absence (`n`) of the bacterium. `trt` reports the treatment, which was `placebo`, `drug`, or `drug+` (drug plus high adherence).
+```{r }
+library(MASS)
+head(bacteria)
+```
+
+Make a bar plot that shows the absolute number of cases with or without the bacterium, stacked on top of each other, for each treatment.
+```{r }
+ggplot(bacteria, aes(x=trt, fill=y)) + geom_bar()
+```
+
+Now modify the plot so that bars representing the absolute number of cases with or without the bacterium are shown side-by-side (`position='dodge'`).
+```{r }
+ggplot(bacteria, aes(x=trt, fill=y)) + geom_bar(position='dodge')
+```
+
+Histograms and density plots
+----------------------------
+
+Make a histogram plot of sepal lengths in the `iris` data set, using the default histogram settings. Then make two more such plots, with different bin widths. Use `geom_histogram()`
+```{r }
+ggplot(iris, aes(x=Sepal.Length)) + geom_histogram()
+
+# wider bins
+ggplot(iris, aes(x=Sepal.Length)) + geom_histogram(binwidth=.2)
+
+# even wider bins
+ggplot(iris, aes(x=Sepal.Length)) + geom_histogram(binwidth=.4)
+```
+
+Instead of `geom_histogram()`, now use `geom_density()` and fill the area under the curves by species identity.
+```{r}
+ggplot(iris, aes(x=Sepal.Length, fill=Species)) + geom_density()
+```
+
+Now make the areas under the curve partially transparent, so the overlap of the various distributions becomes clearly visible.
+```{r}
+ggplot(iris, aes(x=Sepal.Length, fill=Species)) + geom_density(alpha=0.7)
+```
+
+
+
+Scales
+------
+
+Using the `movies` data set provided by ggplot2, make a scatter plot of the number of votes (`votes`) vs. the length of the movie (`length`). Use a log scale for both the x and the y axis.
+```{r}
+ggplot(movies, aes(y=votes, x=length)) + geom_point() + scale_x_log10() + scale_y_log10() 
+```
+
+Now color the points by year and use a color gradient that goes from yellow to blue. You can change the color scale using `scale_color_gradient()`.
+```{r}
+ggplot(movies, aes(y=votes, x=length, color=year)) + geom_point() + scale_x_log10() + scale_y_log10() + scale_color_gradient(low='gold', high='blue')
+```
+
+Now zoom in to movies that are between 1 and 20 minutes long, using `xlim()` instead of `scale_x_log10()`.
+```{r}
+ggplot(movies, aes(y=votes, x=length, color=year)) + geom_point() + xlim(1, 20) + scale_y_log10() + scale_color_gradient(low='gold', high='blue')
+```
+
+More Difficult Scaling
+----------------------
+
+Take the log-log plot of `votes` vs. `length` from the `movies` data set and plot only movies that are between 1 and 20 minutes long, but keep the log scale.
+```{r}
+ggplot(movies, aes(y=votes, x=length, color=year)) + geom_point() + xlim(1, 20) + scale_y_log10() + scale_color_gradient(low='gold', high='blue')
+```
+
+Make a log-log plot of `votes` vs. `length` from the `movies` data set, faceted by year. Plot a trend line onto each facet, without confidence band.
+```{r fig.height=10, fig.width=10}
+ggplot(movies, aes(y=votes, x=length)) + geom_point() + geom_smooth(method='lm', se=FALSE, size=1.5, color='red') + scale_x_log10() + scale_y_log10() + facet_wrap(~year)
+```
+
+Make a bar plot of the number of movies per year in the dataset.
+```{r}
+ggplot(movies, aes(x=year)) + geom_bar()
+```
+
+Go back to the `bacteria` dataset, make a bar plot that shows the total number of cases within each treatment, and plot the number of such cases on top of each bar. Note: VERY HARD
+```{r }
+ggplot(bacteria, aes(x=trt)) + geom_bar() + stat_bin(aes(label=..count..), geom="text", vjust=-1, size=5) + ylim(0, 120)
+```
+
+To plot the number of cases within each treatment, we need to count them. That count is done using `stat_bin()`, which is used by default by `geom_bar()`. However, to actually plot these numbers, we need to have direct access to them, and therefore we have to call `stat_bin()` explicitly. In the `aes()` call inside `stat_bin`, the variable `..count..` contains these counts. The two dots at the beginning and end indicate that the variable was generated by `stat_bin()` and not already present in the original dataset.

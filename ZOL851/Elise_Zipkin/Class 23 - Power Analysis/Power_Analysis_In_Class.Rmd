@@ -1,0 +1,314 @@
+---
+title: "Power_Analysis_In_Class"
+author: "ZOL 851"
+date: "November 19, 2015"
+output: html_document
+---
+
+Built-in Power Analysis Tools
+-----------------------------
+
+The built-in power analysis tools in R are found in the "stats" package.
+```{r}
+help.search("power", package="stats")
+```
+
+We'll start with the simplist function, `power.t.test`. Examine the argmuents it takes with:
+```{r}
+?power.t.test
+```
+
+It works by giving it 1 of the first 5 arguments as NULL, and it will calculate the remaining the one NULL value given. For example:
+```{r}
+power.t.test(n=6, delta=.2, sd=.1, sig.level=0.05, power=NULL) # Note we want the power
+```
+So, the power is ~.85 meaning that if we are doing a two-sided t-test, with a alpha (p-value threshold) of 0.5, with a standard deviation of .1, and a different between groups of .2 and 6 observations in each treament, ~85% of the time will we have statistical significance.
+
+You can change the value you are solving for by adjusting the value set to null.
+```{r}
+power.t.test(n=NULL, delta=.2, sd=.1, sig.level=0.05, power=.95) 
+# Note this time we want the number of observations
+```
+n = ~7.6, so we need 8 observations per group to have 95% chance of significance with the same parameters.
+
+
+In Class Questions:
+1. Calculate the power of a two-sample, two-sided t-test when n=12, delta=1.5,
+sd=2.3. Use a significance level of 0.05.
+
+2. Using the the same t-test, calculate the sample size needed to attain a
+power of 0.85, with delta=6, sd=4.5. Use a significance level of 0.05.
+
+3. power.anova.test: Calculate the sample size needed for a one-way ANOVA
+with between-group variance = 3, within-group variance=5, and 4 groups.
+Use a significance level of 0.05.
+
+4. Calculate the power of a one-way ANOVA with 4 groups, within-group
+variance = 12, between-group variance=4, 20 subjects in each group. Use
+a significance level of 0.05.
+
+5. power.prop.test Calculate the power of the test comparing the proportions
+in two groups (0.5, 0.4), with 20 in each group. Use a significance
+level of 0.05.
+
+"pwr" package
+-------------
+Please install the "pwr" packages with: `install.packages("pwr")`
+Then examine the contents:
+```{r}
+library(pwr)
+help(package=pwr)
+```
+
+More In-Class Questions (using pwr):
+7. Calculate the power of the Pearson’s product moment correlation test,
+where r = 0.8, n = 20, and significance level is 0.05.
+
+8. Calculate the sample size necessary to detect a correlation of r = 0.6, with
+a power of 0.85 and significance level = 0.05.
+
+
+Effect Sizes
+------------
+In lecture, I said that increasing the effect size (the standardised
+“difference” between treatment groups) results in an increased power. However,
+calculation of effect sizes varies from test to test, depending on the underlying
+distribution of the test statistic. Frequently, we do not know the likely effect
+size that may occur in an experiment. The best approach is then to do a pilot
+experiment on a small scale to estimate the likely effect size. In the absence of
+pilot data, Cohen (1988) provides standard measures of effect size, classified as
+“small”, “medium”, and “large” for a variety of tests. These effect sizes are built
+into the pwr package, using the function cohen.ES. Although these “standard”
+effect sizes are somewhat arbitrary, they can provide a first guide for sample size
+estimation. Note, however, that a pilot experiment is the recommended way to
+estimate effect sizes for an experimental study.
+
+More In-Class Exercises:
+
+9. Use cohen.ES to extract “small”, “medium”, and “large” effect sizes for χ-squared, Pearson’s r and proportion tests.
+
+10. Use the above effect sizes to calculate sample sizes with power = 0.8,
+and sig.level = 0.05, using the following functions from the pwr package:
+pwr.chisq.test, pwr.r.test, pwr.p.test.
+
+11. Calculate the power of the above tests with sample sizes 10, 50, 100.
+
+12. Calculate the detectable effect size for the above tests when power = 0.8
+and n = 10, 50, 100.
+
+Power calculations from scratch
+-------------------------------
+Let's pretend we have a null hypothesis distribution with a mean of 0 and sd of 5.
+Then let's say we think we have an effect of 3
+And we're always working under alpha = 0.05
+```{r}
+mu.null = 0
+sd.pop = 5
+mu.effect = 3
+alpha = 0.05
+```
+
+Question 1: if we have a sample size of 25, what is our power?
+
+For this, we first define the effect size & initialize n:
+```{r}
+eff.size = (mu.effect-mu.null)/sd.pop
+n = 25
+
+# Then we just use the equation
+power = pnorm(eff.size*sqrt(n) - qnorm(1-alpha/2))
+power
+```
+
+
+Question 2: what if we want a power of 0.8 - what n do we use?
+
+We still have the effect size, and define the wanted power
+```{r}
+want.power = 0.8
+
+# Then we just plug and play:
+req.n = ((qnorm(want.power) + qnorm(1-alpha/2)) / eff.size)^2
+req.n
+
+# But because we can't have fractions of samples, we round up:
+req.n = ceiling(req.n)
+req.n
+
+```
+
+
+
+Self-made functions
+-------------------
+Z test is a statistical test for if a distribution can be approximated by a normal distribution.  
+
+Here's a function to calculate power: 
+```{r}
+powerZtest = function(alpha = 0.05, sigma, n, delta){
+  zcr = qnorm(p = 1-alpha, mean = 0, sd = 1)
+  std_err = sigma/sqrt(n)
+  power = 1 - pnorm(q = zcr, mean = (delta/std_err), sd = 1)
+  return(power)
+}
+```
+
+Here's a function to calculate sample size:
+```{r}
+sampleSizeZtest = function(alpha = 0.05, sigma, power, delta){
+  zcra=qnorm(p = 1-alpha, mean = 0, sd=1)
+  zcrb=qnorm(p = power, mean = 0, sd = 1)
+  n = ceiling((((zcra+zcrb)*sigma)/delta)^2)
+  return(n)
+}
+```
+
+
+Let's test them against the pwr library:
+```{r}
+### Data
+sigma = 15
+h0 = 100
+ha = 105
+ 
+### Power analysis
+# Using the self-made function
+powerZtest(n = 20, sigma = sigma, delta = (ha-h0))
+# Using the pwr package
+pwr.norm.test(d = (ha - h0)/sigma, n = 20, sig.level = 0.05, alternative = "greater")
+```
+
+```{r}
+### Sample size analysis
+# Using the self-made function
+sampleSizeZtest(sigma = sigma, power = 0.8, delta = (ha-h0))
+# Using the pwr package
+pwr.norm.test(d = (ha - h0)/sigma, power = 0.8, sig.level = 0.05, alternative = "greater")
+ 
+### Power function for the two-sided alternative
+ha = seq(95, 125, l = 100)
+d = (ha - h0)/sigma
+pwrTest = pwr.norm.test(d = d, n = 20, sig.level = 0.05, alternative = "greater")$power
+plot(d, pwrTest, type = "l", ylim = c(0, 1))
+```
+
+Power Curves
+------------
+
+Calculating specific values of power, sample size or effect size can be illuminating
+with regard to the statistical restrictions on experimental design and
+analysis. But frequently a graph tells the story more completely and succinctly.
+Here we show how to draw power, sample size, and effect size curves using the
+above functions in R:
+```{r}
+nvals <- seq(2, 100, length.out=200)
+powvals <- sapply(nvals, function (x) power.t.test(n=x, delta=1)$power)
+plot(nvals, powvals, xlab="n", ylab="power",
+main="Power curve for\n t-test with delta = 1",
+lwd=2, col="red", type="l")
+```
+
+If we are unsure of our effect size, we can also alter delta to see the effect of both effect size and sample size on power:
+```{r}
+deltas <- c(0.2, 0.4, 0.8)
+plot(nvals, seq(0,1, length.out=length(nvals)), xlab="n", ylab="power",
+main="Power Curve for\nt-test with varying delta", type="n")
+for (i in 1:3) {
+  powvals <- sapply(nvals, function (x) power.t.test(n=x, delta=deltas[i])$power)
+  lines(nvals, powvals, lwd=2, col=i)
+}
+legend("topleft", lwd=2, col=1:3, legend=c("0.2", "0.4", "0.8"))
+```
+
+More Questions:
+
+13. Make a graph of the relationship between effect size and power, for a
+sample size of 5, 10, and 20, using power.anova.test. Use 4 groups, with
+the within-group variance equal to 1, and the between-group variance
+varying between 0.1 and 1.2.
+
+
+
+Power Analysis by Simulation
+----------------------------
+Frequently, the complexity of our experimental designs means that we must
+go far beyond what can be accomplished with standard software, such as the
+built-in power functions and the pwr package. Fortunately, R can be easily programmed
+to produce power analyses for any experimental design. The general
+approach is:
+
+1. Simulate data under the null hypothesis (for checking Type I error probabilities) and also for different effect sizes, to estimate power.
+2. Fit the model to the simulated data.
+3. Record whether the analysis of the simulated data set was significant, using the usual tests.
+4. Store the significance level in a vector.
+5. Repeat from step 1. a large number of times.
+6. Tabulate how many simulations produced a significant result, and hence calculate power.
+
+Here is an example: Suppose we wish to conduct a study with two fixed factor,
+leading us to a 2-way analysis of variance (ANOVA), with two levels for each
+factor. We could simulate data under the null hypothesis (no difference between
+means) using the following code:
+```{r}
+## First set up the design
+reps <- 1000
+design <- expand.grid(A=c("a", "b"), B=c("c","d"), reps=1:10)
+pvals <- vector("numeric", length=reps)
+## simulate data under the null hypothesis.
+for (i in 1:reps) {
+  design$response <- rnorm(40) # random data with zero mean
+  ## fit the model
+  fit <- aov(response~A*B, data=design)
+  ## record the p-value for the interaction term.
+  ## You could record other values.
+  ## Save the p value
+  pvals[i] <- summary(fit)[[1]][["Pr(>F)"]][3]
+}
+Type1 <- length(which(pvals < 0.05))/reps
+print(Type1)
+```
+
+It appears that the Type I error rate is acceptable for the 2-factor ANOVA
+interaction term. Now to calculate some power statistics. We will calculate
+power for a difference between means of 2 units, for sample sizes 5, 10, 20.
+
+```{r}
+ssize <- c(5, 10, 20)
+reps <- 1000
+pvals <- matrix(NA, nrow=reps, ncol=3)
+## First set up the design
+for (j in 1:3) {
+  design <- expand.grid(reps=1:ssize[j], A=c("a", "b"), B=c("c","d"))
+  ## simulate data under the null hypothesis.
+  for (i in 1:reps) {
+    design$response <- c(rnorm(3*ssize[j]), rnorm(ssize[j], mean=2))
+    ## fit the model
+    fit <- aov(response~A*B, data=design)
+    ## record the p-value for the interaction term.
+    ## You could record other values.
+    ## Save the p value
+    pvals[i,j] <- summary(fit)[[1]][["Pr(>F)"]][3]
+  }
+}
+Power <- apply(pvals, 2, function (x) length(which(x < 0.05))/reps)
+names(Power) <- as.character(ssize)
+print(Power)
+```
+
+
+We see that the power is too low for a sample size of 5, but it increases to an acceptable level for 10 replicates per treatment.
+
+Difficult Quesion for fun:
+
+Construct a graph of the relationship between power and sample size for a
+multiple regression model with 3 predictor variables, over a range of 1 to
+10 for each predictor. For the effect size, let the residual error have σ = 5,
+and β1 = 0.1, β2 = 1 and β3 = 5. Try varying the effect size to examine
+its effects on power in this case.
+
+
+References
+----------
+Cohen J., 1988. Statistical Power Analysis for the Behavioural Sciences. Routledge,
+2nd ed.
+
+Adapted from: http://www.evolutionarystatistics.org/document.pdf

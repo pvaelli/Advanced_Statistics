@@ -1,0 +1,136 @@
+```{r global_options, include=FALSE}
+library(ggplot2)
+```
+In-class worksheet on ggplot
+============================
+September 29, 2015
+
+Plotting the iris data set
+--------------------------
+Make a scatter plot of petal length vs. sepal length for the three species. Then do the same plot but facet by species instead of coloring.
+```{r }
+# Your Code Here
+```
+
+Make side-by-side boxplots of sepal lengths for the three species of iris. The geom you need to use is `geom_boxplot()`. See if you can guess the correct aesthetic mapping.
+```{r}
+# Your Code Here
+```
+
+Plotting tree-growth data
+-------------------------
+The data set `Sitka` from the MASS package contains repeated measurements of tree size for 79 Sitka spruce trees, which were grown either in ozone-enriched chambers or under control conditions.
+
+```{r}
+library(MASS) # we need to load the MASS library to have access to this dataset
+head(Sitka)
+```
+
+Make line plots of tree size vs. time, for each tree, faceted  by treatment. First, use the same color for all lines.
+```{r}
+# Your Code Here
+```
+
+Then, color by tree.
+```{r}
+# Your Code Here
+```
+
+Finally, color by size.
+```{r}
+# Your Code Here
+```
+
+
+2d Distributions
+----------------
+
+Show the 2d distribution of petal length vs. sepal length in the `iris` dataset, by making an x-y plot that shows the individual data points as well as contour lines indicating the density of points in a given spatial region. Hint look at ```geom_density2d```
+```{r}
+# Your Code Here
+```
+
+If this was still easy, now instead of contour lines add a fitted straight black line (not a curve, and no confidence band!) to each group of points. Note: VERY HARD
+```{r}
+# Your Code Here
+```
+
+
+Bar plots
+---------
+The MASS package contains a data set `bacteria` which contains data from tests of the presence of the bacterium H. influenzae in children with otitis media in the Northern Territory of Australia. We are interested in two columns of this data set: `y` reports presence (`y`) or absence (`n`) of the bacterium. `trt` reports the treatment, which was `placebo`, `drug`, or `drug+` (drug plus high adherence).
+```{r }
+library(MASS)
+head(bacteria)
+```
+
+Make a bar plot that shows the absolute number of cases with or without the bacterium, stacked on top of each other, for each treatment.
+```{r }
+# Your Code Here
+```
+
+Now modify the plot so that bars representing the absolute number of cases with or without the bacterium are shown side-by-side (`position='dodge'`).
+```{r }
+# Your Code Here
+```
+
+Histograms and density plots
+----------------------------
+
+Make a histogram plot of sepal lengths in the `iris` data set, using the default histogram settings. Then make two more such plots, with different bin widths. Use `geom_histogram()`
+```{r }
+# Your Code Here
+```
+
+Instead of `geom_histogram()`, now use `geom_density()` and fill the area under the curves by species identity.
+```{r}
+# Your Code Here
+```
+
+Now make the areas under the curve partially transparent, so the overlap of the various distributions becomes clearly visible. Look for `alpha` parameter
+```{r}
+# Your Code Here
+```
+
+
+
+Scales
+------
+
+Using the `movies` data set provided by ggplot2, make a scatter plot of the number of votes (`votes`) vs. the length of the movie (`length`). Use a log scale for both the x and the y axis.
+```{r}
+# Your Code Here
+```
+
+Now color the points by year and use a color gradient that goes from yellow to blue. You can change the color scale using `scale_color_gradient()`.
+```{r}
+# Your Code Here
+```
+
+Now zoom in to movies that are between 1 and 20 minutes long, using `xlim()` instead of `scale_x_log10()`.
+```{r}
+# Your Code Here
+```
+
+More Difficult Scaling
+----------------------
+
+Take the log-log plot of `votes` vs. `length` from the `movies` data set and plot only movies that are between 1 and 20 minutes long, but keep the log scale.
+```{r}
+# Your Code Here
+```
+
+Make a log-log plot of `votes` vs. `length` from the `movies` data set, faceted by year. Plot a trend line onto each facet, without confidence band.
+```{r fig.height=10, fig.width=10}
+# Your Code Here
+```
+
+Make a bar plot of the number of movies per year in the dataset.
+```{r}
+# Your Code Here
+```
+
+Go back to the `bacteria` dataset, make a bar plot that shows the total number of cases within each treatment, and plot the number of such cases on top of each bar. Note: VERY HARD
+```{r }
+# Your Code Here
+```

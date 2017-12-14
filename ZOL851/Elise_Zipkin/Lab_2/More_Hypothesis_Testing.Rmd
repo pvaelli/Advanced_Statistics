@@ -1,0 +1,606 @@
+More Hypothesis Tests
+=====================
+
+```{r}
+set.seed(12733) # To make sure I know what you're getting if you run this yourself...
+par(mar = c(4,4,1,1)) # To make sure you can see the graphs when I run this...
+```
+
+One sample t-tests
+------------------
+
+Last lab, we showed how to test whether a sample differed from the null hypothesis.
+But to do so, we assumed we knew the variance of the sampling distribution of the mean.
+Usually, we don't
+
+To start, let's sample 40 people from our population (~N(1,3)) again
+```{r}
+pop.sample = rnorm(40,mean = 1, sd = 3)
+mean(pop.sample)
+```
+
+We know that if we did a lot of sampling like this, our distribution would have:
+
+Mean = 1
+
+SD.Mean = 3/sqrt(40) = 0.474
+
+But this time we don't know the standard deviation of the population.
+Instead, we have to ESTIMATE the standard deviation of the mean.
+This is called the 'standard error' of the mean.
+
+To start, our best guess of the population standard deviation is the sample SD.
+So we can calculate the standard error based on that assumption.
+Thus the standard error is the sample SD divided by the square root of the sample size.
+```{r}
+se.mean = sd(pop.sample)/sqrt(40)
+se.mean
+```
+
+Note that this is close to the standard deviation of the mean (0.474) - but not quite.
+
+Now we can do something very similar to what we did last week - give a 95% confidence interval.
+But the standard error is not distributed normally.
+Instead, it's distributed using the t-statistic.
+You can get the t-distribution using the standard R modifiers: r/d/p/qt.
+But the t-distribution takes a parameter - 'degrees of freedom' (df).
+Let's see what it looks like for various df values.
+```{r}
+par(mfrow = c(2,3))
+for(tval in c(2,5,10,30,120)) {
+  title = paste('t=',tval)
+  plot(seq(-3,3,by=.01),dt(seq(-3,3,by=.01),df = tval),main = title,type='l',ylim=c(0,.4))  
+}
+plot(seq(-3,3,by=.01),dnorm(seq(-3,3,by=.01)),main = 'z',type='l',ylim=c(0,.4))
+par(mfrow = c(1,1))
+```
+
+Notice that as the df gets large, the t distribution approaches the z distribution.
+
+So rather than calculating the z-limits of a confidence interval, we calculate the t-limits.
+But we need to know the degrees of freedom for the sample.
+For interval estimation, this is one less than the sample size - 39.
+Remember - with a 95% CI, alpha is 0.05.
+So now we use the qt() command, just like qnorm().
+
+```{r}
+t.crit = qt(1-(0.05/2),df = 39)
+```
+
+And so we can be 95% sure that the mean is within t.05 standard errors of the sample mean
+```{r}
+top.range = mean(pop.sample) + t.crit * se.mean
+bottom.range = mean(pop.sample) - t.crit * se.mean
+```
+
+And again... 95% chance we're in the confidence interval
+```{r}
+top.range
+bottom.range
+```
+
+Likewise, you can calculate the p-value of a t-test the same way as a z-test.
+First get a 't-score', then test where it falls on the t-distribution.
+The t-score is the difference in the mean from the null, divided by the standard error.
+
+Or: t* = (mean.obs - mean.null)/se
+
+So in this case
+```{r}
+t.score = (mean(pop.sample) - 0) / se.mean
+t.score
+```
+
+Then we can test where this falls in the t-distribution
+```{r}
+pt(t.score, df = 39)
+```
+
+But just like a z-score, you need to take 2*(1-pt) to find the p value (if you're in the upper tail)
+```{r}
+p.ttest = 2*(1-pt(t.score,df = 39))
+p.ttest
+```
+
+You can also shortcut this whole process with t.test()
+
+```{r}
+t.test(pop.sample)
+```
+
+This should tell you all you need to know about the t-test of the sample:
+The t-value, p value, 95% confidence interval, and best estimate of the mean.
+
+Note though, that this defaults to at 95% confidence interval.
+You can change this (say to a 99% interval) using the conf.level argument:
+```{r}
+t.test(pop.sample, conf.level = 0.99)
+```
+
+And you can change your null hypothesis - by default you ask whether the mean of your sample is different than 0.
+For instance, if you wanted to know if the mean of the population were different than 1.
+You just set the 'mu' argument to 1.
+```{r}
+t.test(pop.sample, mu = 1)
+```
+
+And finally, you can pull out these values by storing the test to a variable and accessing it like a list
+```{r}
+tt = t.test(pop.sample)
+str(tt)
+
+tt$statistic # The t-value
+tt$conf.int # Confidence interval
+tt$estimate # The best estimate of the mean
+```
+
+
+
+Let's see this in practice...
+For instance, you measure the height of a group of men to be:
+```{r}
+heights = c(68,72,69,68,69,70,70,77,71,72,75,71,71,68,67,70,73,70,76,68)
+```
+
+You also know that the average height of men in the population is 69 inches.
+What's the mean of your sample?
+```{r}
+mean(heights)
+```
+
+This is slightly greater than the population average...
+But do you have any evidence that your sample is statistically different (alpha = .05)?
+You have your sample, and you know your null hypothesis, so...
+```{r}
+t.test(heights, mu = 69)
+```
+
+Yes - the p value is .0108
+
+Two-sample t-tests
+------------------
+
+One sample t-tests work when you know what the mean of the null hypothesis is.
+In the last example, we knew that the average population height was 69 inches.
+But in many cases, you won't know the mean of the null hypothesis.
+
+Let's say you want to know if happy music gives people better memory.
+You segment 20 subjects each into two groups...
+The control group listens to neutral music then takes a memory test.
+While the experimental group listens to happy music then takes a memory test.
+You then get the following scores on the tests:
+```{r}
+cont.sc = c(23,27,16,22,18,22,21,24,18,17,18,22,15,17,23,21,20,18,20,25)
+exp.sc = c(19,24,18,21,24,23,22,27,20,21,26,20,26,25,32,25,24,21,20,20)
+```
+
+In this case, you don't know what the population would score on the memory test.
+All you have to measure this is the scores of your control group.
+But the mean of the control group isn't known exactly - only estimated through your data.
+
+So does the experimental group have statistically higher scores?
+By the means, they are slightly higher:
+```{r}
+mean(cont.sc)
+mean(exp.sc)
+```
+
+But we're doing statistics, not thumb-in-the-air analysis!
+
+We want to test whether the difference in the means is 0 or not
+```{r}
+mean.diff = mean(exp.sc) - mean(cont.sc)
+mean.diff
+```
+
+So let's start by defining the t-statistic.
+
+Recall: t = (exp.mean-null.mean)/std.err
+
+And in the one sample t-test, std.err = std.dev/sqrt(n) = std.dev*sqrt(1/n)
+
+But that assumes perfect knowledge about the null mean.
+Because we don't have this knowledge, we need to 'pool' our std.dev.
+Typically, you would calculate this by weighting the variances by the degrees of freedom:
+
+```{r}
+exp.n = length(exp.sc)
+cont.n = length(cont.sc)
+s.pooled = sqrt(((exp.n-1)*sd(exp.sc)^2 + (cont.n-1)*sd(cont.sc)^2)/(exp.n + cont.n - 2))
+s.pooled
+```
+
+But when we have equal n, this becomes much more simple:
+```{r}
+s.pooled = sqrt(0.5 * (sd(cont.sc)^2 + sd(exp.sc)^2))
+s.pooled
+```
+
+This is just averaging the variances of the individual distributions.
+Note that this assumes that the variances are actually equal in the two groups.
+The only difference is that you're taking separate (imperfect) samples.
+So you're just using both samples combined to better estimate the variance.
+
+We also need to adjust for the number of subjects in each sample.
+In this case, we multiply by sqrt(1/n.cont + 1/n.exp)
+
+So the standard error is:
+
+```{r}
+se.pooled = s.pooled*sqrt(1/20+1/20)
+```
+
+So our t statistic is simply calculated as:
+
+```{r}
+t.two = mean.diff/se.pooled
+```
+
+Next, we need to define the degrees of freedom for the t distribution.
+We define this as the total number of subjects minus 2. (We need one degree of freedom each for each distribution)
+```{r}
+df.t = 20 + 20 - 2
+```
+
+So now that we have a t-statistic and degrees of freedom, we calculate p
+```{r}
+p = 2*(1-pt(t.two,df = df.t))
+p
+```
+
+We can tell that there is a statistically significant difference at alpha = 0.05
+
+But we can also take a shortcut with t.test.
+Here we give t.test both vectors, rather than just one:
+```{r}
+t.test(exp.sc,cont.sc)
+```
+
+Notice that the df and p are very slightly different from what we calculated.
+This is because by default, t.test does not assume the variances are equal.
+If you want to assume equal variance, you must set var.equal to TRUE
+```{r}
+t.test(exp.sc,cont.sc, var.equal = TRUE)
+```
+
+And we can change the CI level the same way too:
+```{r}
+t.test(exp.sc,cont.sc,var.equal = TRUE, conf.level = .99)
+```
+
+Paired t-tests
+--------------
+
+In some cases, you want to measure the improvement in a single subject over time.
+For instance, a drug company tests a weight loss pill will weigh subjects before then weight them afterwards. 
+The pill is considered successful if there is a significant decrease in weight.
+Let's say they did this for 20 males and got the following data:
+```{r}
+before = c(190,174,196,153,187,182,153,165,149,116,190,171,169,151,191,145,182,149,181,160)
+after = c(188,171,188,165,174,175,130,159,153,111,180,166,165,154,185,129,187,142,176,162)
+```
+
+Now what happens if you run a t-test?
+```{r}
+t.test(after,before)
+```
+
+In this case, you wouldn't see any evidence of an effect...
+But you would be wrong.
+
+A core assumption of two-sample t-tests is that the observations are independent.
+But in this case, they're not - each subject contributes a before and after.
+Let's look at this in a data frame to see how they match up:
+```{r}
+wloss = data.frame('Before' = before, 'After' = after)
+wloss
+```
+
+Or just plot them quickly:
+```{r}
+plot(before,after)
+```
+
+You can see that some subjects are heavier in general, and some are lighter.
+But you don't care about baseline weights - you want to know if there's a change.
+And from the plot, it looks pretty clear that some relationship exists...
+
+In the case of paired or repeated measures t-tests, you just take a difference score.
+Then run a t-test on that difference
+```{r}
+wloss$Diff = after - before
+wloss
+```
+
+This has the effect of changing it back into a one-sample t-test.
+In this t-test, the null hypothesis is there is no change - aka a mean of 0
+```{r}
+t.test(wloss$Diff)
+```
+
+Note that if you don't make this a paired test, you don't find an effect.
+The between subject differences are much bigger than the within subject differences.
+If you are looking at differences within subjects, always use a paired t-test by doing a t-test of the difference scores
+
+Binomial testing
+================
+
+Let's end our tour of hypothesis tests by going back to our friend the binomial test. This one will be quick and will give you an easy shortcut.
+
+Let's start with an example where we take 40 flips of a coin that lands H 75%
+```{r}
+flip.40 = rbinom(1,40,.75)
+flip.40 # The number of heads
+```
+
+Now to test whether this was a fair coin, you would use some pbinom gymnastics:
+
+```{r}
+p.fair = 2*(1-pbinom(flip.40-1,40,0.5))
+p.fair
+```
+
+Not too difficult, but R gives us the tools to make this even easier... the function ```binom.test()```.
+```binom.test``` takes two arguments: the number of 'successes/heads' and number of 'tries'.
+So in this case we have 40 tries, and 'flip.40' successes.
+
+Which means we call:
+```{r}
+binom.test(flip.40,40)
+```
+
+binom.test gives you the same information that t.test does, but for the exact binomial test.
+Note that it also gives you a confidence interval for the bias of the coin.
+As a note to this - if you've learned the normal approximation to calculate this elsewhere, you'll get a different answer.
+This does an exact calculation (and thus is more accurate).
+
+A few final notes on binom.test
+
+By default, binom.test uses a 50% chance of success for the null hypothesis.
+But you can set this differently with the p argument.
+For instance, if we wanted to test whether our data was different from 75% heads:
+```{r}
+binom.test(flip.40,40,p = .75)
+```
+
+Like the t-test, you can define a custom CI level (say 99% CI here):
+```{r}
+binom.test(flip.40,40, conf.level = .99)
+```
+
+And finally, you can pull out data the same way you did for t-tests:
+```{r}
+bt = binom.test(flip.40,40)
+
+bt$p.value # The p value of the test
+bt$conf.int # The lower and upper ranges of the confidence interval
+bt$estimate # The best estimate of the probability of success
+```
+
+Note that binom.test uses exact calculations, which will give the technically correct answer (unlike some approximations).
+However, the reason that approximations exist is that they're faster...
+These days, computers help us do lots of computations - but they can still get tripped up.
+```binom.test``` starts to hang at n ~ 1,000,000
+But I doubt you'll be using ns that large... so typically this is the right way of solving binomial tests and CIs.
+
+Misc functions
+--------------
+
+We have introduced correlation and covariance in class.
+But don't want to spend much time with them in R.
+Why? Because they're too easy.
+
+To get the covariance, you just use the ```cov()``` function, with two vectors of data
+```{r}
+xs = c(1,2,3,4,5)
+ys = c(2,2,4,4,6)
+cov(xs,ys)
+```
+
+# And then the correlation is just done the same way through the cor() function
+```{r}
+cor(xs,ys)
+```
+
+Goodness of fit
+---------------
+
+Binomial tests are great for dichotomous variables - if something happens or it doesn't. 
+But in many cases, you'll want to know about a range of occurrences.
+For instance die rolls... can we tell if a die is fair?
+Let's say we rolled a die 100 times, and came up with the following data:
+14 ones, 10 twos, 13 threes, 16 fours, 13 fives, and 34 sixes. 
+(Often, you can get these counts from a table() of your enumerated data)
+```{r}
+die.rolls = c(14,10,13,16,13,34)
+```
+
+So is this a fair die?
+Hopefully you've learned about chi-square tests...
+
+Chisq = sum((obs-exp)^2/exp)
+
+Well we have our observed data in die.rolls.
+And our expected value is 100/6 assuming equivalence.
+So we can calculate chi squared statistic as:
+```{r}
+die.chisq = sum((die.rolls - 100/6)^2/(100/6))
+```
+
+Then we want to know whether this is significant...
+So we go to the chi-square distribution.
+You can get at this with p/d/q/rchisq.
+It also takes it's own df (degrees of freedom) parameter.
+
+Since there are 6 options (one per die side), there are 5 (6-1) df.
+Now we can find the probability of getting that chisq statistic or LESS using pchisq
+```{r}
+pchisq(die.chisq,df=5)
+```
+
+But to get the p-value, we want to know the probability of getting something MORE extreme.
+This is just 1-P(less), or:
+```{r}
+1-pchisq(die.chisq,df=5)
+```
+
+But of course, this being R, there's a much easier way to find this all out:
+Just use chisq.test() on your data:
+```{r}
+chisq.test(die.rolls)
+```
+
+And just like binom.test and t.test, you can store this and pull data out
+```{r}
+cst = chisq.test(die.rolls)
+cst$p.value
+cst$statistic
+```
+
+Next, what if I told you that this wasn't a fair die at all.
+Instead, I rigged it so that 25% of the time it would come up 6, and other sides with equal p.
+Do you have evidence that I'm lying now?
+First let's define the probabilities:
+```{r}
+die.probs = c(.15,.15,.15,.15,.15,.25)
+```
+
+Now we could go through that ugly math again...
+Or just plug it into chisq.test() using the 'p' argument
+```{r}
+chisq.test(die.rolls,p=die.probs)
+```
+
+Good - no longer significant, so you can (start to) trust me
+
+Test of independence
+--------------------
+
+You may also be measuring two categorical values, and want to know if they are independent.
+Let's say you're looking at the current Republican primary field.
+The front-runners are Trump, Carson, and Bush
+A question you might want to know is whether Republicans differ by Tea Party affiliation.
+Do Tea Partiers prefer candidates in the same proportion as those who don't affiliate?
+
+We can survey 1000 people, and ask whether they prefer Trump, Carson, and Bush, or 'other'
+
+You get the following data
+
+```{r}
+pol.pref = matrix(c(153,63,86,77,116,186,211,108),nrow=2,byrow=TRUE,
+                  dimnames = list(c('Not Tea Party','Tea Party'),c('Trump','Carson','Bush','Other')))
+```
+
+Do Tea Partiers and non-Tea Partiers differ?
+We can just look at the conditional probabilities of voting given affiliation:
+```{r}
+pol.pref['Not Tea Party',] / sum(pol.pref['Not Tea Party',])
+pol.pref['Tea Party',] / sum(pol.pref['Tea Party',])
+```
+
+And they certainly look different.
+But in this class, we must ask: are they statisitically different?
+In this case, a chi-square test of independence can help us determine this.
+
+This test asks whether the probability of voting for a candidate is independent of Tea Party affiliation.
+Or in probabilistic terms: P(vote|affilliation) = P(vote)
+
+To test this, we first need to create what the distribution of responses would be assuming independence.
+For this we can use the ```margin.table()``` function.
+```margin.table()``` takes two arguments: the matrix to marginalize, and which way to do so.
+If you type ```margin.table(mat,1)```, it marginalizes mat over the rows.
+And if you type, ```margin.table(mat,2)```, it marginalizes mat over the columns.
+```{r}
+margin.table(pol.pref,1)
+```
+
+So we can get the probability of being part of the Tea Party (the rows) as:
+```{r}
+p.tea = margin.table(pol.pref,1)/sum(pol.pref)
+p.tea
+```
+
+And the probability of voting for a candidate overall as:
+```{r}
+p.vote = margin.table(pol.pref,2)/sum(pol.pref)
+p.vote
+```
+
+We can then determine the probability of the conjunction by using the ```outer()``` function.
+This function takes two vectors, and returns a matrix multiplication of their outer products.
+```{r}
+p.independent = outer(p.tea,p.vote)
+p.independent
+```
+
+Finally, to get expected counts, we multiply probabilities by the total number surveyed.
+```{r}
+pol.exp = p.independent * sum(pol.pref)
+pol.exp
+```
+
+Now the chi-square test of independence is the sum over all cells of:
+(actual - expected)^2 / expected
+
+Or in R terms:
+```{r}
+chsq.ind = sum((pol.pref-pol.exp)^2/pol.exp)
+```
+
+This will follow a chi-square distribution with df = 3
+Why 3? Because you count the number of rows of data (r) and number of columns (c).
+And df = (r-1) * (c-1).
+So df = (4-1) * (2-1) = 3.
+
+And again we can use 1 - pchisq:
+
+```{r}
+1-pchisq(chsq.ind,df = 3)
+```
+
+This is so close to 0 we can assume that these distributions are different.
+
+But of course, R gives us a much easier way of doing this... chisq.test().
+We can just run this on the matrix and it will give us the same answer
+```{r}
+chisq.test(pol.pref)
+```
+
+And just like with the goodness of fit chi-square, you can store this to a variable and manipulate the p-values, test statistic, etc.
+
+One additional parameter you might want to pull out is the expected distribution under the assumption of independence.
+This is done through the 'expected' data field
+```{r}
+chisq.test(pol.pref)$expected
+```
+
+Note that this is identical to our pol.exp values calculated above
+
+But chi-square tests can be brittle if you have few observations in some buckets.
+Let's say you were instead given the same poll as above, but with Santorum as a candidate.
+```{r}
+pol.pref.h = matrix(c(153,63,86,8,69,116,186,211,2,106),nrow=2,byrow=TRUE,
+                  dimnames = list(c('Not Tea Party','Tea Party'),c('Trump','Carson','Bush','Santorum','Other')))
+pol.pref.h
+```
+
+Notice how little love Santorum is getting...
+So what happens if we run a chi-square test?
+```{r}
+chisq.test(pol.pref.h)
+```
+
+Notice that it now gives you a warning message.
+This is because when there are less than 5 observations in a cell,
+the chi-square test statistic no longer perfectly follows the chi-square distribution.
+R notices this and will tell you as much.
+
+However, there is a (partial) solution for this: the simulate.p.value argument.
+If you set this to true, R tries to simulate what the actual distribution should be under independence.
+And you can get a more valid test
+```{r}
+chisq.test(pol.pref.h, simulate.p.value=TRUE)
+```
+
+Note the massively different p-value here.
+(if you want details on what is hapenning, see http://andrewgelman.com/2011/11/chi-square-fail-when-many-cells-have-small-expected-values/)

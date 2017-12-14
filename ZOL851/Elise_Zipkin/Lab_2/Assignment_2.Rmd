@@ -1,0 +1,36 @@
+Assignment 2
+============
+Due: October 1st, 11:59pm 
+
+Name: Patric Vaelli
+
+Basic Probability
+-----------------
+A device has a sensor connected to an alarming system. 
+The sensor triggers with probability 0.95 if dangerous conditions exist in a given day and with probability 0.005 if conditions are normal during the day. 
+Days with dangerous conditions occur with probability 0.005. 
+
+1) (2 points) What is the probability of false alarm, i.e. the probability that conditions are normal when the alarm system triggers? (Please always show your work for partial credit)
+
+2) (2 points) What is the probability of unidentified critical condition, i.e. the probability that conditions are dangerous when the system does not trigger?
+
+3) (2 points) How many false alarms and how many unidentified critical conditions should be expected to occur during a 10-year period?
+
+Write a ```rescale``` function
+------------------------------
+
+1) (2 points) Write a function ```rescale``` that takes a vector as input and returns a corresponding vector of values scaled to lie in the range 0 to 1 (linearly scale your data so the smallest element becomes 0, the largest becomes 1, and the rest fall in between. You should return all zeroes if the minimum and maximum of the vector are the same. 
+
+Example input => output
+```
+rescale(c(1, 2, 3)) # => c(0.0, 0.5, 1.0)
+rescale(c(-5, -3, 4, 11, 5)) # => c(0.0, 0.125 0.5625 1.0 0.625)
+rescale(c(5)) # => c(0)
+rescale(c(3,3)) # => c(0, 0)
+```
+
+2) (1 point) Demonstrate that your rescale function is working properly using min, max, and plot. Use ```rnorm(100, 10, 10)``` for your input vector.
+
+3) (1 point) Demonstrate that the scaled randomized input is still (roughly) normally distributed visually.
+
+

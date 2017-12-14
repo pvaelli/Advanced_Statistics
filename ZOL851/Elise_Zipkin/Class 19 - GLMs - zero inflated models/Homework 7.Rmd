@@ -1,0 +1,152 @@
+---
+title: 'Homework #7'
+output: html_document
+---
+
+###Name:
+
+###Due: November 12, 11:59pm
+
+---
+
+You want to model how many fish are being caught by fishermen at a state park. Some visitors do not fish, but there is no data on whether a person fished or not. Some visitors who did fish did not catch any fish so there are excess zeros in the data because of the people that did not fish.
+
+We have data on 250 groups that went to the park. Each group was questioned about how many fish they caught (count), how many people in total were in the group (persons), how many children were in the group (child), and whether or not they brought a camper to the park (camper - binary variable) but not whether they went fishing (whah wa).
+
+In addition to predicting the number of fish caught, you are also interested in predicting the existence of excess zeros, i.e., the probability that a group caught zero fish seperate from those individuals that just did not fish. 
+
+We will use the variables `child`, `persons`, and `camper` in our model to examine `counts`. 
+
+---
+
+1. Load the libraries, read in the data, and do some summary statistics. (2 pts)
+
+```{r}
+#Load the libraries
+require(ggplot2)
+require(MASS)
+require(pscl)
+```
+
+```{r}
+#Read in the data
+fish <- 
+
+#Look at the first few rows of the data
+head(fish)
+
+#Make it clear that camper is a factor (not a covariate) 
+fish <- within(fish, {
+  camper <- factor(camper)
+})
+
+#Let's look at some summary stats of the raw data
+
+
+#What is the mean and variance of the counts?  What does this tell you about the likely model choice
+
+
+#What is the mean and variance of the nonzero count values?
+
+
+#Histogram of the count data; not particularly informative
+hist(fish$count, main="")
+
+## Use GGplot to plot the data in histogram with x axis in log10 scale, which is more informative
+# Add labels - titles - to the x and y axes 
+ggplot(fish, aes(count)) + geom_histogram() + scale_x_log10() 
+```
+
+---
+
+2. First analyze these data (seperately) using Poisson and negative binomial regression.  Use all three variables (persons, child, camper) as main effects covariates in the model. Show summaries of the results and write a few sentences comparing the outputs from the two models. (4 pts)
+
+```{r}
+#Poisson model
+m1 <- 
+  
+
+  
+  
+#Negative binomial model
+m2 <- 
+  
+  
+  
+  
+```
+
+---
+
+3.  Re-run the analysis using zero-inflated models (Poisson and negative binomial- again, seperately). Assume that `persons` is a variable that might affect the number of structural zeros and that `child` and `camper` would affect the counts.  Explain parameter estimates and model results.  Also answer the questions imbedded in the code below. (4 pts)
+
+```{r}
+#You will need the 'zeroinfl' function in the pscl package.
+
+#Analyze the data using a zero-inflated model
+# First using the Poisson distribution
+m3 <- 
+  
+
+# Next with the negative binomial distribution
+m4 <- 
+ 
+   
+
+#What is the theta parameter?  Remember there are multiple ways to parameterize the negative binomal
+#distribution.  Look up the random number generator of the negative binomial to figure out theta (rnegbin).
+
+  
+  
+  
+  
+#Look up the 'hurdle' function.  Does a hurdle model make sense in this scenario?  Why or why not?
+
+  
+
+   
+```
+
+---
+
+4.  Graph results. To better understand our model, we can compute the expected number of fish caught for different combinations of our predictors. Since we are working with essentially categorical predictors, we can compute the expected values for all combinations using the expand.grid function to create all combinations and then the predict function to do it. We also remove any rows where the number of children exceeds the number of persons, which does not make sense logically, using the subset function.  Code is included for doing this for the ZIP (zero inflated Poisson) model.  Add code and a figure to predict the counts for the ZINB model.  Add a couple of sentences comparing the predicted values between the two models. (2 pts)
+
+```{r}
+#For the zero-inlfated Poisson model
+newdata1 <- expand.grid(0:3, factor(0:1), 1:4)
+colnames(newdata1) <- c("child", "camper", "persons")
+newdata1 <- subset(newdata1, subset=(child<=persons))
+newdata1$phat <- predict(m3, newdata1)
+
+ggplot(newdata1, aes(x = child, y = phat, colour = factor(persons))) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~camper) +
+  labs(x = "Number of Children", y = "Predicted Fish Caught")
+
+#For the zero-inlfated negative binomial model
+
+
+
+
+
+
+
+```
+
+---
+
+5.  How to decide which model to use?  We will discuss model selection more throughly in a later lecture but one approach is AIC, which uses the log-likelihood and the number of parameters in the model to select between competing models. When comparing models fitted by maximum likelihood to the same data, the smaller the AIC, the better the fit. Look up the `AIC` function. Create a table with the AIC values for models m1-m4 and sort them in order from lowest to highest AIC value, be sure to include the name of each model in the table.  Which model has the lowest AIC value?  What does this say about our results? (3 pts)
+
+```{r}
+fish.AIC = 
+  
+  
+  
+  
+fish.AIC
+
+
+
+```
+

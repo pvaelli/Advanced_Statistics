@@ -1,0 +1,68 @@
+Notes for connecting git and terminal.
+
+Go to GitHub, copy URL for directory. 
+
+Paste >> git clone URL
+Enter username and password on for git account into terminal.
+
+When modifying files in R studio, can update between Rstudio/local directories and the git repository by
+
+#is there a change?
+>> git status
+
+#what changed?
+>> git diff
+
+# added new commit/modified file
+>> git add README.md
+
+# git with a particular message with short description of changes we made
+# want to add descriptions for collaborators to describe changes that are made. 
+>> git commit -m "enter description of the change here"
+
+# log for reverse chronological order
+>> git log
+
+# push this repository/changes from my computer onto GitHub
+>> git push origin master
+
+# Can also make changes on the GitHub website with commit descriptions included. However, our computer doesn't know these changes have occurred yet, so we need to update.
+
+>> git log
+# should say nothing, doesn't know anything has happened
+
+>> git fetch origin
+# tells git to communicate with the remote repository and downloads all of the commits that have happened since then.
+#this will tell you what changes have occurred (by collaborators, etc.) before you modify your own local files.
+
+>> git merge origin/master
+# should download commits from GitHub onto local machine.
+
+or
+
+>> git pull origin master
+# this command does the previous two combined, but it doesn't give you a chance to review the changes before modifying local files.
+
+
+Going to turn in hwk assignments using R markdown (.Rmd files vs .md markdown files)
+
+SO WHAT DO WE DO WHEN WE WORK/EDIT FILES ON OUR COMP?
+
+Do what you do, then save file. 
+
+>> git status
+#tells us which file changed
+
+>> git add "path to file"
+# for a single file, or we can update several files.
+
+>> git add "other files"
+
+>> git status
+# tells us what we're about to do
+
+>> git commit -m "Changed these several files, here is the description"
+
+# finally, we push our changes to GitHub (vs PULL above, when we update our local files)
+>> git push origin master
+

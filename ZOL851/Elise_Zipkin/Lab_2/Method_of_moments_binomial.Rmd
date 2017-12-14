@@ -1,0 +1,18 @@
+Method of Moments for binomial
+==============================
+
+R function to compute random data from a binomial distribution, use method of moments to estimate p, and then compare it to the theoretical distribution.
+```{r}
+binomial.MOM <- function(p=0.1, n=25, size=25) {
+  x <- rbinom(n=n, size=size, prob=p) # generate random numbers from binomial
+	p.est <- mean(x)/size # The method of moments estimated value for p
+	p.diff <- p - p.est # difference between true value and estimate
+	p.diff}
+```
+
+Let's do this comparison a thousand times
+```{r}
+p.1000 <- replicate(1000, binomial.MOM(p=0.1, size=25))
+plot(density(p.1000))
+```
+

@@ -1,0 +1,73 @@
+---
+title: "Class 9 Lab - Modes of Inference"
+output: html_document
+---
+
+We are going to use the tadpole example to examine different approaches for analyzing data in R. Our goal is to estimate the probability of detection (theta) of tadpoles.  We release n=50 tadpole in a pond. Later we go out to sample and resight y=20 individuals.
+
+```{r}
+r <- 20
+N <- 50
+```
+
+First, let's try a brute force approach where we plot the likelihood directly.  Use the PMF of the binomial distribution.
+
+
+Start by defining all possible values for theta:
+```{r}
+theta=seq(0,1, by = 0.01)
+x=rep(0,length(theta))
+```
+Examine the probability of each theta given the data
+```{r}
+for (i in 1:length(theta)){
+  x[i] <- (factorial(N) / (factorial(N) * factorial(N-r))) * theta[i]^r * (1-theta[i])^(N-r)
+}
+```
+
+```{r, echo=FALSE}
+plot(theta,x, type="p", pch=16)
+abline(v=0.4, col="red", lwd=3)
+```
+
+Now we can see that the likelihood is maximized when theta = 0.4.
+__________________________________________________________________________
+
+Of course there are many situations where we can't estimate parameters using brute force. Let's examine how we can maximize the likelihood using another approach: numerical integration.
+
+First define negative log-likelihood function:
+
+```{r}
+nll <- function(p) {
+  -dbinom(r, size = N, prob = p, log = TRUE)
+}
+```
+
+Why do we use the negative log-likelihood?  What would happen if we used just the negative likelihood?  What about just the likelihood?  *You might want to ?dbinom if you are unfamility with this function
+
+Next minimize the function for observed data and return MLE.  We use the quasi-Newton method (BFGS) for optimization.
+```{r}
+fit <- optim(par = 0.5, fn = nll, method = "BFGS")
+```
+
+
+Examine the value for which the parameter is maximized.
+```{r, echo=FALSE}
+fit$par
+```
+
+Why are NaNs produced for some values?  Which value(s)?
+__________________________________________________________________________
+
+Note we can use the GLM function for the same thing.  Note this estimates the coefficient on the logit scale.  What is the standard error of the coefficient?  Is it large?  Why might that be?
+
+```{r}
+fm <- glm(cbind(20,30) ~ 1, family = binomial)
+summary(fm)
+plogis(fm$coefficients)
+```
+
+Now is a good time to start familiarizing yourself with the `glm` and `lm` functions.
+
+We are not going to do a Bayesian analysis of these data but we will do one when we return to the topic in a later class.
+

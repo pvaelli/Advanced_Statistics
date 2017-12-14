@@ -1,0 +1,19 @@
+
+    model {
+    # Priors
+    alpha ~ dnorm(0,0.001) # Note: small precision = huge variance (prec=1/variance)
+    beta ~ dnorm(0,0.001)
+    sigma ~ dunif(0, 100)   	# Note: Large variance = Small precision
+    
+    # Likelihood
+    tau <- 1/ (sigma * sigma)
+    for (i in 1:n) {
+    y[i] ~ dnorm(mu[i], tau) 
+    mu[i] <- alpha + beta*x[i]
+    }
+    
+    # Derived quantities
+    p.decline <- 1-step(beta)	# Probability of decline: step(beta) = if beta >=0; 0 otherwise
+    
+    }
+    

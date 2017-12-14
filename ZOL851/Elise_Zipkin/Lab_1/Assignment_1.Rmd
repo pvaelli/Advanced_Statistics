@@ -1,0 +1,85 @@
+Assignment #1
+=============
+This assignment is due at midnight on the night of the September 21st.
+Please be sure to push your commits to GitHub. If you are late, please email
+our grader, Sarah Saunders (saund123@msu.edu), when finished.
+
+Name: Patric Vaelli
+
+Date Finished: ???
+
+Problem #1 (1 point)
+--------------------
+```{r}
+numbers = c(2, 6, 47, 524, 6, 34, 76, 9, -98, 23, 65, 22, -5, 234, 54)
+```
+Write the code to determine the mean of the vector named ```numbers`` after removing
+negative values. 
+Your code should work all numeric vectors, so you can't use specific indices of the vector provided.
+```{r}
+mean(numbers >= 0)
+```
+**GRADER: mean(numbers[numbers >= 0]).**
+
+Problem #2
+-------------
+For this question you are going to analyze the Bumpus sparrow data set.
+
+Bumpus, Hermon C. 1898. Eleventh lecture. The elimination of the unfit as illustrated by the introduced sparrow, Passer domesticus. (A fourth contribution to the study of variation.) Biol. Lectures: Woods Hole Marine Biological Laboratory, 209-225.
+
+ This is probably the most famous data set for the study of natural selection.  Here is a selection from Bumpus’s study (as provided by the Field Museum):
+
+" ... on February 1 of the present year (1898), when, after an uncommonly severe storm of snow, rain, and sleet, a number of English sparrows [= House Sparrows, Passer domesticus] were brought to the Anatomical Laboratory of Brown University [, Providence, Rhode Island]. Seventy-two of these birds revived; sixty-four perished; ... " (p. 209). "... the storm was of long duration, and the birds were picked up, not in one locality, but in several localities; ... " (p. 212). This event was described by Hermon Bumpus (1898) had has served as a classic example of natural selection in action. Bumpus' paper is of special interest since he included the measurements of these 136 birds in his paper. These data have been reanalyzed several times (Grant 1972, O'Donald 1973, Johnston et al. 1972… and many more).
+
+Data file consists of the following variables: 
+
+1) line number from Bumpus' tables 
+2) sex, m = male; f = female 
+3) age, for males only, a = adult [= AHY], y = young [= HY]
+4) survival, TRUE if survived, FALSE if perished 
+5) Total Length (mm) "from tip of the beak to the tip of the tail" 
+6) Alar Extent (mm) "from tip to tip of the extended wings" 
+7) Weight (g) 
+8) Length of Beak and Head (mm), "from tip of the beak to the occiput" 
+9) Length of Humerus (in) 
+10) Length of Femur (in) 
+11) Length of Tibiotarsus (in) 
+12) Width of Skull (in), "from the postorbital bone of one side to the postorbital bone of the other" 
+13) Length of Keel of Sternum (in)
+
+Problem 2a (1 point)
+--------------------
+
+Read in the dataset from the file ```bumpus.csv``` to the variable ```bumpus_data```
+and print the first few obervations.
+```{r}
+bumpus_data <- read.csv("bumpus.csv")
+```
+**GRADER: To print first few observations: head(bumpus_data). +0.5. Also don't forget to set your working directory**
+
+Problem 2b (2 points)
+-------------
+Create a scatterplot of the relationship between total length and weight, but only include data of the birds that survived.
+```{r}
+bumpus_survived_subset <-subset(bumpus_data, survival=="TRUE")
+plot(bumpus_survived_subset$total_length~bumpus_survived_subset$weight, xlab="Weight", ylab="Total Length", main="Length vs Weight in Survivors")
+```
+**GRADER: flip weight and length in code above. Length is a predictor of weight. +1.5**
+
+Problem 2c (1 point)
+--------------------
+What is the mean difference in weight between the survivors and not?
+```{r}
+mean(bumpus_data$survival=="TRUE") - mean(bumpus_data$survival=="FALSE")
+```
+**GRADER: In your code, you're not indicating weight as the variable to calculate the mean on. mean(subset(bumpus_data, survival==FALSE)$weight)-mean(subset(bumpus_data, survival==TRUE)$weight).**
+
+Problem 2d (1 point)
+--------------------
+Scan through the paper from which the data was drawn. What confounding variables are mentioned for the relationship between survival and weight?
+
+Your answer here.
+
+**GRADER: Sex and age were confounding variables. I think you are auditing the course? If so, ignore grade and simply learn from comments. TOTAL: 2/6**
+
+

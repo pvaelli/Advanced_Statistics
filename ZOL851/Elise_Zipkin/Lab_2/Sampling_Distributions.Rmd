@@ -1,0 +1,616 @@
+Sampling Distributions
+======================
+
+Combining distributions
+-----------------------
+
+Now let's have some more fun with simulation!
+To begin, recall that when two distributions are combined, their sums and variances are added together.
+
+So if I had two normals: one with mean=5, sd=3; and one with mean=10, sd = 4.
+Then the combined mean would be 15 (5 + 10).
+And the combined standard deviation would be 5 (sqrt(3^2 + 4^2))
+
+Let's see that in action:
+```{r}
+comb.norm = rnorm(10000,mean=5,sd=3) + rnorm(10000,mean=10,sd=4)
+mean(comb.norm)
+sd(comb.norm)
+```
+
+The best part is - we know exactly what this distribution is going to look like.
+Any time you add two normal distributions together, the resulting distribution will be normal
+```{r}
+hist(comb.norm)
+```
+
+Another test for normality is the 'qq plot'.
+This plots the quantiles of two distributions against each other.
+If it's a straight line, then you know that the two distributions are the same.
+So an easy way to do a quick check for normality is to qq plot a distribution against the normal.
+This is easy with R - qqnorm() will do the normal comparison automatically for you.
+
+And if you want to add a straight line, you can with qqline():
+```{r}
+qqnorm(comb.norm)
+qqline(comb.norm)
+```
+
+Okay - so if you add two normals, you can figure out the combined mean and sd easily...
+But does this hold for other distributions?
+What if we combine two exponential distributions?
+
+Let's first see what a single distribution looks like.
+Note that in the exponential distribution, mean and sd = 1/rate (4, in this case)
+```{r}
+sing.exp = rexp(10000,rate=.25)
+mean(sing.exp)
+sd(sing.exp)
+```
+
+The exponential distribution is decidedly non-normal:
+```{r}
+plot(seq(0,10,by=.01),dexp(seq(0,10,by=.01),rate=.25),type = 'l')
+```
+
+Now let's add two exponentials with mean/sd = 4.
+Will the combined means and standard dev
+```{r}
+comb.2exp = rexp(10000,rate = .25) + rexp(10000,rate = .25)
+```
+
+The mean should be 8 (4 + 4)
+```{r}
+mean(comb.2exp)
+```
+
+And the sd should be about 5.66 (sqrt(4^2 + 4^2) = 4*sqrt(2))
+```{r}
+sd(comb.2exp)
+```
+
+But how does it look?
+Here we're going to do a density plot - this is basically just a smoothed histogram
+```{r}
+plot(density(comb.2exp),xlim = c(0,20))
+```
+
+Well that's not a normal...
+But it's not an exponential distribution either...
+What if we add three exponentials?
+```{r}
+comb.3exp = rexp(10000,rate = .25) + rexp(10000,rate = .25) + rexp(10000,rate = .25)
+```
+
+Again, the mean should be 12, and the sd should be ~6.92 (4*sqrt(3))
+```{r}
+mean(comb.3exp)
+sd(comb.3exp)
+```
+
+And what does this look like?
+```{r}
+plot(density(comb.3exp),xlim = c(0,30))
+```
+
+That's starting to look like a skewed normal...
+
+So let's now sum 10 of these distributions:
+```{r}
+comb.10exp = replicate(10000,sum(rexp(10,rate = .25)))
+```
+
+The mean should be 40, and the sd should be ~12.65 (4*sqrt(10))
+```{r}
+mean(comb.10exp)
+sd(comb.10exp)
+```
+
+And visualize:
+```{r}
+plot(density(comb.10exp),xlim = c(0,100))
+```
+
+Well this is starting to look more normal...
+But if we qq plot it, we can see some skew:
+```{r}
+qqnorm(comb.10exp)
+qqline(comb.10exp)
+```
+
+And 100?
+```{r}
+comb.100exp = replicate(10000,sum(rexp(100,rate = .25)))
+```
+
+The mean should be 400, and the sd should be 40 (4*sqrt(100))
+```{r}
+mean(comb.100exp)
+sd(comb.100exp)
+```
+
+And visualize:
+```{r}
+plot(density(comb.100exp),xlim = c(0,1000))
+```
+
+This looks pretty normal.
+And the qq plot will confirm that for us (it's a little off in the tails, but barely):
+```{r}
+qqnorm(comb.100exp)
+qqline(comb.100exp)
+```
+
+But this is the key thing: if you keep adding up distributions,
+in the limit, the resulting distribution will be normal, regardless of the underlying distributions.
+
+And here's the greatest part about it... what if you didn't know the mean of the exponential distribution?
+Well, if you took 100 samples, what would your best esimate of the mean of the distribution be?
+
+How about the mean of the 100 samples?
+Which of course, is just the sum of all of the samples, divided by 100...
+
+So if we know that the sum of n samples from a distribution is distributed as a normal with a mean of pop.mean times n and a standard deviation of pop.sd times sqrt(n)... then if you divide both of those by n, your estimate of the mean will be normal with a mean of pop.mean and a standard deviation of pop.sd/sqrt(n)
+```{r}
+mean.exp = comb.100exp/100
+mean(mean.exp) # Should be ~4
+sd(mean.exp) # Should be ~ 0.4 (4 / sqrt(100))
+hist(mean.exp) # Looks pretty normal...
+```
+
+Central Limit Theorem
+---------------------
+
+Here we're going to demonstrate the Central Limit Theorem in action
+
+Let's say we have a population has an attribute with a mean of 1 and sd of 3.
+Often in our experiments, we'll only be able to take a small sample from the population - say 20 people.
+Then our best estimate of the population mean will be the mean of that sample
+
+Let's try it:
+```{r}
+mean(rnorm(20,mean = 1, sd = 3))
+```
+
+But we don't get the exact population mean...
+Let's try it again:
+```{r}
+mean(rnorm(20,mean = 1, sd = 3))
+```
+
+That's not quite it either... again?
+```{r}
+mean(rnorm(20,mean = 1, sd = 3))
+mean(rnorm(20,mean = 1, sd = 3))
+mean(rnorm(20,mean = 1, sd = 3))
+mean(rnorm(20,mean = 1, sd = 3))
+mean(rnorm(20,mean = 1, sd = 3))
+```
+
+So let's do this a large number of times
+```{r}
+lots.o.samples = replicate(10000,mean(rnorm(20,mean=1,sd=3)))
+```
+
+The mean should be pretty close to 1 (or we would have a biased statistic)...
+```{r}
+mean(lots.o.samples)
+```
+
+That's good... if we do this a lot of times, on average the mean of the sample will be the population mean
+
+And we can look at the distribution
+```{r}
+hist(lots.o.samples, breaks = seq(-4,6,by=.1))
+```
+
+That looks pretty normally distributed..
+So what's the standard deviation of the sampled means?
+```{r}
+sd(lots.o.samples)
+```
+
+Well, recall in the last section, we showed that summing lots of distributions made a normal distribution.
+And that if you summed the same distribution over and over and divided by n.
+That's the same as taking a mean of a sample
+And this mean will be normally distributed around the population mean with a standard deviation of pop.sd / sqrt(n)
+
+And that's what we did with lots.o.samples.
+We took a 20-person sample, and found the mean over and over again.
+So the standard deviation of the mean should be pop.sd / sqrt(n).
+And we know that the population standard deviation is 3 (we defined it as such).
+So the standard deviation of the means should be:
+```{r}
+3/sqrt(20)
+```
+
+So if we take lots and lots of these 20-person samples,
+the mean of those samples is distributed as we would expect
+
+But what if we were able to take larger samples?
+What would happen to our estimate of the mean?
+
+According to what we've learned, the average mean would still be 1.
+But as we increase n, the deviation of these means will decrease.
+
+Let's try this with 100 people per sample
+```{r}
+lots.o.samples = replicate(10000,mean(rnorm(100,mean=1,sd=3)))
+hist(lots.o.samples, breaks = seq(-4,6,by=.1))
+mean(lots.o.samples) # ~1
+sd(lots.o.samples) # ~ 3/sqrt(100) = 0.3
+```
+
+But if we can't take 20 samples, our estimation of the mean will get worse.
+On average, it will still be 1, but each estimate will deviate more from the mean.
+```{r}
+lots.o.samples = replicate(10000,mean(rnorm(5,mean=1,sd=3)))
+hist(lots.o.samples, breaks = seq(-6,8,by=.1),xlim = c(-4,6))
+mean(lots.o.samples) # ~1
+sd(lots.o.samples) # ~ 3/sqrt(5) = 1.342
+```
+
+And for a side by side comparison:
+```{r}
+hist(lots.o.samples,breaks = seq(-6,8,by=.1),xlim = c(-4,6),ylim=c(0,1500),main = 'n = 5')
+lots.o.samples = replicate(10000,mean(rnorm(20,mean=1,sd=3)))
+hist(lots.o.samples,breaks = seq(-6,8,by=.1),xlim = c(-4,6),ylim=c(0,1500),main = 'n = 20')
+lots.o.samples = replicate(10000,mean(rnorm(100,mean=1,sd=3)))
+hist(lots.o.samples,breaks = seq(-6,8,by=.1),xlim = c(-4,6),ylim=c(0,1500),main = 'n = 100')
+par(mfrow = c(1,1))
+```
+
+So far we're assuming that the population attribute is distributed normally. 
+But this is often not the case.
+The great part about the central limit theorem is it doesn't matter if the sample is large enough.
+
+Let's try this by generating uniform random numbers between 0 and 1.
+We can get a sample of 20 of these.
+```{r}
+mean(runif(20))
+mean(runif(20))
+mean(runif(20))
+```
+
+The mean should be 0.5 - and we're getting close to it...
+But we have R; so let's test it by simulation!
+```{r}
+lots.o.samples = replicate(10000,mean(runif(20)))
+```
+
+How is this shaped?
+```{r}
+hist(lots.o.samples,breaks = seq(0,1,by=.01))
+```
+
+Looks pretty normal, right?
+So what are the mean and standard devation of this distribution?
+```{r}
+mean(lots.o.samples)
+sd(lots.o.samples)
+```
+
+Does this match with intuition?
+Well, the mean should be 0.5.
+And take it from me on faith that the sd of a uniform from 0 to 1 is ~0.288.
+So the sd should be:
+```{r}
+0.288/sqrt(20)
+```
+
+If we increase the number of people in each sample, this again gets more refined:
+```{r}
+lots.o.samples = replicate(10000,mean(runif(100)))
+hist(lots.o.samples,breaks = seq(0,1,by=.01))
+sd(lots.o.samples) # .288/sqrt(100) = .0288
+```
+
+Or shrink the people per sample
+```{r}
+lots.o.samples = replicate(10000,mean(runif(5)))
+hist(lots.o.samples,breaks = seq(0,1,by=.01))
+sd(lots.o.samples) # .288/sqrt(5) = .129
+```
+
+Note that even with a uniform distribution and 5 people per sample,
+the distribution of the sample means is still pretty normal
+(it will have fat tails, but it isn't too bad)
+```{r}
+qqnorm(lots.o.samples)
+qqline(lots.o.samples)
+```
+
+But what if the data itself is EXTREMELY non-normal.
+We're going to define a pdf for a very odd function on the range 0 to 1.
+Don't worry for now exactly how this works - we'll explain conditionals later.
+
+```{r}
+dodd = function(x) {
+  if(length(x) > 1) {return(sapply(x,dodd))}
+  if(x < 0) {return(0)}
+  else if (x < .1) {return(2)}
+  else if (x < .4) {return(0)}
+  else if (x < .6) {return(10*(x-.4))}
+  else if (x < .7) {return(0)}
+  else if (x < .8) {return(4)}
+  else if (x < .9) {return(0)}
+  else if (x < 1) {return(40*(1-x))}
+  else {return(0)}
+}
+```
+
+But what does this distribution look like?
+```{r}
+plot(seq(-.1,1.1,by=.001),dodd(seq(-.1,1.1,by=.001)),type='l',ylab='f(x)',xlab='x')
+```
+
+We can also calculate the expected value by integrating f(x)dx.
+Or in this case, sum over very small slices.
+```{r}
+sum(dodd(seq(0,1,by=.001))/1001)
+```
+
+So on average we should get 1.
+And we can again get the standard deviation in the same way.
+(Summing over the squared deviation from the mean for small slices)
+```{r}
+sqrt(sum((dodd(seq(0,1,by=.001))-1)^2 /1001))
+```
+
+This is ~ 1.34
+
+Then we can define a random draw.
+Since this function is defined only on 0 < x < 1, we can draw randomly from it using runif. 
+Just call the function on runif to get one sample here
+```{r}
+rodd = function(n) {
+  return(dodd(runif(n)))
+}
+```
+
+So we can get one sample
+```{r}
+rodd(1)
+```
+
+Or ask for more draws:
+```{r}
+rodd(10)
+```
+
+With that in mind, what does the sampling distribution look like?
+Let's take lots of samples of 20 people
+```{r}
+lots.o.samples = replicate(10000,mean(rodd(20)))
+hist(lots.o.samples, breaks = seq(0,4,by=.1),xlim = c(0,2.5))
+```
+
+Not too bad... this looks relatively normal.
+So let's check the mean and sd:
+```{r}
+mean(lots.o.samples) # ~ 1
+sd(lots.o.samples) # ~ 1.34/sqrt(20) = .299
+```
+
+And we can increase the sample size to refine our observations
+```{r}
+lots.o.samples = replicate(10000,mean(rodd(100)))
+hist(lots.o.samples, breaks = seq(0,4,by=.1),xlim = c(0,2.5))
+mean(lots.o.samples) # ~ 1
+sd(lots.o.samples) # ~ 1.34/sqrt(100) = .134
+```
+
+But now let's take a small sample:
+```{r}
+lots.o.samples = replicate(10000,mean(rodd(5)))
+hist(lots.o.samples, breaks = seq(0,4,by=.1),xlim = c(0,2.5))
+```
+
+Uh oh... this doesn't look normal at all...
+The mean and standard deviation look okay:
+```{r}
+mean(lots.o.samples) # ~ 1
+sd(lots.o.samples) # ~ 1.34 / sqrt(5) = .599
+```
+
+But many of our statistical tests for the mean require that it come from a normal distribution.
+So we can't build confidence intervals or do standard statistical tests on the mean...
+
+We would need a larger sample to ensure that the sampling mean is normally distributed.
+Usually about 25-30 samples guarantees normality
+
+That's a good rule of thumb - 25-30 samples won't steer you wrong
+
+Let's see how that works with this data.
+Here we'll plot the sampling distribution for samples sizes 5, 10, 15, 20, 25 & 30.
+Don't worry about the for loop yet - I'm just doing this to save typing time
+```{r}
+par(mfrow = c(2,3))
+for(n in seq(5,30,by=5)) {
+  samps = replicate(10000,mean(rodd(n)))
+  title = paste('n=',n)
+  hist(samps, breaks = seq(0,4,by=.1),xlim = c(0,2.5), main=title)
+}
+par(mfrow = c(1,1))
+```
+
+And let's see how that looks in qq plot form:
+```{r}
+par(mfrow = c(2,3))
+for(n in seq(5,30,by=5)) {
+  samps = replicate(10000,mean(rodd(n)))
+  title = paste('n=',n)
+  qqnorm(samps, main=title)
+  qqline(samps)
+}
+par(mfrow = c(1,1))
+```
+
+Notice how the distribution gets less skewed as the sample size increases
+
+z-tests
+-------
+
+Preamble: This makes sure I know what random numbers come out when you run the script
+That way I guarantee that I'm right when you run this script (at least on a mac)
+```{r}
+set.seed(5391)
+```
+
+So now what if we're only able to take one sample?
+We want to now say something about the population mean based on the sample. 
+Well, our best guess is going to be the mean of the sample
+```{r}
+pop.sample = rnorm(20,mean = 1, sd = 3)
+mean(pop.sample)
+```
+
+It's not exact though...
+But we just saw that the mean of a sample follows a rational distribution.
+It will be drawn from a normal distribution centered around the population mean.
+And will have a standard deviation pop.sd / sqrt(n)
+
+So in this case, the mean of the sampling distribution will be 1.
+And the standard deviation of the mean will be:
+```{r}
+sd.mean = 3 / sqrt(20) # ~ .671
+sd.mean
+```
+
+So knowing the mean of the sample and its standard deviation, can we figure out the mean of the population? 
+Well - to an extent.
+Our best guess is the mean of the sample.
+But we can define a confidence interval within the population falls with some probability.
+So let's say we want to be 95% sure that the mean falls within a given interval.
+
+First, let's recall that a known standard error is distributed normally.
+So we want to find the 95% middle of the normal distribution.
+This means from 2.5% of the CDF to 97.5% of the CDF.
+```{r}
+top.z = qnorm(.975)
+bottom.z = qnorm(.025)
+top.z
+bottom.z
+```
+
+Note that bottom.z is just negative top.z (since the normal is symmetrical).
+So we can just subtract top.z rather than adding bottom.z
+
+Thus the true population mean should be within -1.96 to 1.96 standard deviations of the population mean
+```{r}
+top.range = mean(pop.sample) + top.z * sd.mean
+bottom.range = mean(pop.sample) - top.z * sd.mean
+```
+
+Note that 1 - the real mean - is within the range of the confidence interval
+(or at least there's a 95% chance that the interval will include it...)
+```{r}
+top.range
+bottom.range
+```
+
+You can do this with any range...
+Let's say you want to have a 99% confidence interval.
+We'll call this having an alpha of 0.01 (one minus the confidence level).
+Alpha is the probability that the mean is NOT in the confidence interval.
+In this case you want to split alpha equally to the top and the bottom.
+So you can find the z-score by finding the part of the normal distribution below 1-alpha/2
+```{r}
+z.01 = qnorm(1-(0.01/2))
+```
+
+Now the top and bottom of the confidence interval can be calculated as:
+```{r}
+top.range.01 = mean(pop.sample) + z.01 * sd.mean
+bottom.range.01 = mean(pop.sample) - z.01 * sd.mean
+```
+
+Now we can be pretty (99%) sure that the true population mean is in this range
+```{r}
+top.range.01
+bottom.range.01
+```
+
+Or let's say we only need to be 80% sure.
+That's an alpha of 0.2 (1 - 80%)
+```{r}
+z.20 = qnorm(1-(0.2/2))
+top.range.20 = mean(pop.sample) + z.20 * sd.mean
+bottom.range.20 = mean(pop.sample) - z.20 * sd.mean
+```
+
+Now we're pretty sure that the range contains 5, but less sure than before
+```{r}
+top.range.20
+bottom.range.20
+```
+
+Note that the range get's smaller with higher alpha, and larger with lower alpha.
+As we shrink our confidence interval, we become less sure that it contains the real mean.
+And we can have more confidence, but the range that could contain the mean gets larger.
+
+Next, let's ask whether we can safely say that the mean of the population is not zero.
+We know a priori that it's not - it's 1 - but given our sample of 20 can we prove it?.
+YES! With a z-test ... or at least we can be sure to a given alpha tolerance (e.g., .05).
+In a z-test, you want to know how many standard deviations from the null hypothesis your mean is
+
+This is calculated as (obs.mean - null.mean)/sd.mean.
+Since null mean in this case is 0, we can determine the z-score as:
+```{r}
+z = (mean(pop.sample) - 0)/sd.mean
+z
+```
+
+We then test where on the standard normal cdf the z-score lies
+```{r}
+pnorm(z)
+```
+
+This gives the probability that you would have gotten that mean OR LESS if the null hypothesis were true.
+But we want to know what the probability of getting that mean OR GREATER is...
+```{r}
+1 - pnorm(z)
+```
+
+And since we're looking for a two-tailed test, and the normal is symmetric...
+We would require an alpha value of at least twice that value.
+Thus the p value is equal to 2*(1-pnorm)
+```{r}
+p.ztest = 2*(1-pnorm(z))
+p.ztest
+```
+
+Since this is greater than our chosen alpha (.05), we can't reject the null.
+Remember the lower bound of the 95% confidence interval?
+```{r}
+bottom.range
+```
+
+Notice it's lower than 0...
+If the CI ever includes the null hypothesis, you can't reject the null at that alpha value.
+
+But what if we got more observations for greater power?
+```{r}
+pop.sample.2 = rnorm(50,mean = 1, sd = 3)
+mean(pop.sample.2)
+```
+
+Then the sd of the mean would be tighter (because of the higher n)
+```{r}
+sd.mean.2 = 3 / sqrt(50)
+sd.mean.2
+```
+
+And so the z score will be larger
+```{r}
+z.2 = mean(pop.sample.2)/sd.mean.2
+z.2
+```
+
+Now we can test the p value again
+```{r}
+p.ztest.2 = 2*(1-pnorm(z.2))
+p.ztest.2
+```
+
+This p is less than our designated alpha, so we CAN reject the null in this case

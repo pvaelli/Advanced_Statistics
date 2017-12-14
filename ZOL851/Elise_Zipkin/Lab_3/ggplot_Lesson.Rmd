@@ -1,0 +1,249 @@
+ggplot Lesson
+=============
+Adapted from: http://varianceexplained.org/RData/code/code_lesson2/
+
+```{r}
+#install.packages("ggplot2")
+library("ggplot2")
+# Load Diamonds dataset
+data(diamonds)
+```
+Scatter plots
+------------
+An "aesthetic" is a dimension of a graph that we can perceive visually: the simplest example being the x and y axes. When we make a scatterplot, we choose one attribute to assign to the x axis, and one attribute to assign to the y axis.
+
+Other aesthetics we can use in a scatter plot are the color, size, and shape of the points in the graph: each of these aesthetics lets us communicate some dimension of the data, and understand complex relationships between them.
+
+As an example, let's use ggplot2 to create a scatterplot where we put carat, or weight, on the x axis and price, in dollars, on the y axis. So now we make a ggplot2 call. We start with:
+```{r}
+ggplot(diamonds, aes(x=carat, y=price)) + geom_point()
+```
+Now, this plot shows two aesthetics- weight and price- but there are many other attributes of the data we can communicate. For example, we might want to see how the quality of the cut, or the color, or the clarity, affects the price. Each of those variables is a factor: that means each value belongs to one of a finite number of categories. We can add this using another aesthetic, for example, the color of the points:
+```{r}
+ggplot(diamonds, aes(x=carat, y=price, color=clarity)) + geom_point()
+```
+
+If we would rather see how the quality of the color or cut of the diamond affects the price, we can change the aesthetic. Here in "aes" we change "clarity" to "color".
+```{r}
+ggplot(diamonds, aes(x=carat, y=price, color=color)) + geom_point()
+```
+
+Now every item in the color legend is one of the ratings of color. Or we can change it to "cut":
+
+```{r}
+ggplot(diamonds, aes(x=carat, y=price, color=cut)) + geom_point()
+```
+
+Now, what if we want to see the effect of both color and cut? We can use a fourth aesthetic, such as the size of the points. So here we have color representing the clarity. Let's add another aesthetic- let's say "size=cut."
+```{r}
+ggplot(diamonds, aes(x=carat, y=price, color=clarity, size=cut)) + geom_point()
+```
+
+Similarly, we could use the shape to represent the cut:
+```{r}
+ggplot(diamonds, aes(x=carat, y=price, color=clarity, shape=cut)) + geom_point()
+```
+
+Now, this scatter plot is one "layer", which means we can add additional layers besides the scatter plot using the plus sign. For example, what if we want to add a smoothing curve that shows the general trend of the data? That's a layer called `geom_smooth`.
+```{r}
+ggplot(diamonds, aes(x=carat, y=price)) + geom_point() + geom_smooth()
+```
+
+The gray area around the curve is a confidence interval, suggesting how much uncertainty there is in this smoothing curve. If we want to turn off the confidence interval, we can add an option to the `geom_smooth` later; specifically "se=FALSE", where "s.e." stands for "standard error."
+```{r}
+ggplot(diamonds, aes(x=carat, y=price)) + geom_point() + geom_smooth(se=FALSE)
+```
+Similarly, if we would rather show a best fit straight line rather than a curve, we can change the "method" option in the geom_smooth layer. In this case it's method="lm", where "lm" stands for "Linear model".
+```{r}
+ggplot(diamonds, aes(x=carat, y=price)) + geom_point() + geom_smooth(se=FALSE, method="lm")
+```
+
+If you used a color aesthetic, ggplot will create one smoothing curve for each color. For example, if we add "color=clarity":
+```{r}
+ggplot(diamonds, aes(x=carat, y=price, color=clarity)) + geom_point() + geom_smooth(se=FALSE)
+```
+
+Now we see it actually fits one curve for each of these colors. This is a useful way to compare and contrast multiple trends. Note that you can show this smoothing curve layer without showing your scatter plot layer, simply by removing the `geom_point()` layer:
+```{r}
+ggplot(diamonds, aes(x=carat, y=price, color=clarity)) + geom_smooth(se=FALSE)
+```
+
+Arbitary Lines
+--------------
+You can use the data attribute to use a dataframe for a specific layer as below.
+```{r}
+x <- 1:5
+y <- x * 3000
+model = data.frame(x,y)
+ggplot(diamonds, aes(x=carat, y=price)) + geom_point() + geom_line(data=model, x=x, y=y)
+```
+
+
+Facets
+------
+Another way that you can communicate information about an attribute in your data is to divide your plot up into multiple plots, one for each level, letting you view them separately. This is called "faceting", and ggplot makes it very easy with the "facet_wrap" function.
+```{r}
+ggplot(diamonds, aes(x=carat, y=price, color=cut)) + geom_point() + facet_wrap(~ clarity)
+```
+
+You can even divide your graph based on two different attributes, such as both color and clarity, using facetgrid. In this case that would be `facet_grid`, then you put "color ~ clarity", where the tilde (~) means "explained by."
+```{r}
+ggplot(diamonds, aes(x=carat, y=price, color=cut)) + geom_point() + facet_grid(color ~ clarity)
+```
+
+Adding Labels
+-------------
+
+There are many other ways to customize a plot. For starters, you might want to set a title, or set the x or y axis labels manually. You change these options by adding to the end of the line of code. To set the title, you would use the ggtitle function:
+```{r}
+ggplot(diamonds, aes(x=carat, y=price)) + geom_point() + ggtitle("My scatter plot")
+```
+
+This adds a title to the top of your graph. If you'd like to change the x- or y- axis labels, you would add "xlab" for "x label", then your custom label:
+```{r}
+ggplot(diamonds, aes(x=carat, y=price)) + geom_point() + ggtitle("My scatter plot") + xlab("Weight (carats)")
+```
+
+You might also want to limit the range of the x or the y axes. You can do this with the xlim or ylim options, which are also added to the end of the line. In this case, say we only want to look at the weights from 0 to 2 carats. We would do:
+```{r}
+ggplot(diamonds, aes(x=carat, y=price)) + geom_point() + ggtitle("My scatter plot") + xlab("Weight (carats)") + xlim(0, 2)
+```
+
+Each of these options gets added on after the last one. Now we can see that the x-axis ranges only from 0 to 2. Similarly, if we wanted to show only the y-axis from 0 to 10000, we could put
+```{r}
+ggplot(diamonds, aes(x=carat, y=price)) + geom_point() + ggtitle("My scatter plot") + xlab("Weight (carats)") + ylim(0, 10000)
+```
+
+Another possibility is to put one of the axes on a log scale. You can do this with the `scale_y_log10()` function.
+```{r}
+ggplot(diamonds, aes(x=carat, y=price)) + geom_point() + ggtitle("My scatter plot") + xlab("Weight (carats)") + scale_y_log10()
+```
+
+Histograms
+----------
+All you need to do to make a histogram is to change your layer from `geom_point()` to `geom_histogram()`. For example, we do
+```{r}
+ggplot(diamonds, aes(x=price)) + geom_histogram()
+```
+
+You can change the width of each bin as an option to the geom_histogram layer. You can make them wider:
+```{r}
+ggplot(diamonds, aes(x=price)) + geom_histogram(binwidth=2000)
+```
+Or you can change it to be thinner:
+```{r}
+ggplot(diamonds, aes(x=price)) + geom_histogram(binwidth=200)
+```
+
+Other than that, you can do most of the same things with a histogram that you could with a scatter plot. You can again facet histograms into multiple subplots using `facet_wrap`. For instance, take a plot and use `facet_wrap`, and let's divide it by clarity:
+```{r}
+ggplot(diamonds, aes(x=price)) + geom_histogram(binwidth=200) + facet_wrap(~ clarity)
+```
+
+Notice that we've created 8 subplots, one for each level of clarity. Note that each subplot shares the same y axis, which might make it hard to interpret the frequencies: some subplots have far more points than others. So to free up the y axis so they can be different between the graphs, we add an argument to `facet_wrap`. In this case, we add `scale="free_y"`:
+```{r}
+ggplot(diamonds, aes(x=price)) + geom_histogram(binwidth=200) + facet_wrap(~ clarity, scale="free_y")
+```
+
+Let's say you want to add another attribute to this histogram to see its effect on the density: for example, to make a stacked histogram based on the clarity attribute. Try adding the "fill" aesthetic:
+```{r}
+ggplot(diamonds, aes(x=price, fill=clarity)) + geom_histogram()
+```
+
+You could set this to any other attribute as well, for example the cut:
+```{r}
+ggplot(diamonds, aes(x=price, fill=cut)) + geom_histogram()
+```
+
+Another way to view the distribution is as a density curve. You can do this by changing `geom_histogram` to `geom_density`. Remove the `fill` attribute.
+```{r}
+ggplot(diamonds, aes(x=price)) + geom_density()
+```
+
+If you want to divide this density curve up based on one of your attributes, you can use the `color` aesthetic instead of `fill`. For example, you can add `color=cut`.
+```{r}
+ggplot(diamonds, aes(x=price, color=cut)) + geom_density()
+```
+
+Box Plots
+---------
+One common method in statistics for comparing multiple densities is to use a boxplot. A boxplot has two attributes: an x, which is usually a classification into categories, and y, the actual variable that you're comparing.
+
+In this case, let's say that you want to compare the distribution of the price within each color. You would do:
+```{r}
+ggplot(diamonds, aes(x=color, y=price)) + geom_boxplot()
+```
+
+In this particular case, since there are a large number of outliers you might want to try putting the y-axis on a log scale. Recall that we do that by adding an option:
+```{r}
+ggplot(diamonds, aes(x=color, y=price)) + geom_boxplot() + scale_y_log10()
+```
+
+One problem with the boxplot is that it doesn't show details of the distribution besides these quantiles. This works well when the data follows a Normal distribution, or a "bell curve," but it might not work well for stranger distributions. For example, the distribution might have not one but two frequency peaks, what we call "bimodality." However strange the distribution, a box plot will always look like a square. We can instead view the distribution as a density using what's called a "violin plot". To do that, all we do is change `geom_boxplot` to `geom_violin`.
+```{r}
+ggplot(diamonds, aes(x=color, y=price)) + geom_violin() + scale_y_log10()
+```
+
+Just like in scatter plots or histograms, if we want to see whether another variable is involved, we can use facet_wrap to divide our plot into multiple subplots. For example, we could divide this into subgroups based on clarity. To do that, we would do
+```{r}
+ggplot(diamonds, aes(x=color, y=price)) + geom_violin() + scale_y_log10() + facet_wrap(~ clarity)
+```
+
+Bar charts
+----------
+You can plot with bar charts as well.
+
+```{r}
+ggplot(diamonds, aes(x=color)) + geom_bar()
+```
+
+Stacked bar graph -- this is probably not what you want.
+```{r}
+ggplot(diamonds, aes(x=color, fill=cut)) + geom_bar()
+```  
+
+Using the `position="dodge"`, you can have grouped bar charts.
+```{r}
+ggplot(diamonds, aes(x=color, fill=cut)) + geom_bar(position='dodge')
+```     
+
+Saving
+------
+So you just created a great ggplot, and now you want to save it to a file, so you can email it, or add it to your paper or poster, or just look at it later. You can do this with the ggsave function.
+
+
+First, let's create a scatterplot based on our diamonds data.
+```{r}
+ggplot(diamonds, aes(x=carat, y=price)) + geom_point()
+```
+
+Now instead of displaying it, let's run that line again, but save it to a variable, called p.
+```{r}
+p = ggplot(diamonds, aes(x=carat, y=price)) + geom_point()
+```
+
+Note that when that happened, the plot did not get recreated: it WAS built but never displayed. We've saved the entire plot into this `p` object. Now we can save that plot to a file, instead of displaying it in our window, by using `ggsave`:
+```{r}
+ggsave(filename="diamonds.png", p)
+```
+
+What just happened is that we created a file called diamonds.png that saved the image. It doesn't have to be a PNG; it can also be a PDF:
+```{r}
+ggsave(filename="diamonds.pdf", p)
+```
+
+or a JPEG:
+```{r}
+ggsave(filename="diamonds.jpeg", p)
+```
+
+One useful shortcut is that if you just displayed a plot, like in a line like this:
+```{r}
+ggplot(diamonds, aes(x=carat, y=price)) + geom_point()
+```
+Then ggsave will know to save that plot by default when you perform `ggsave` - you don't even have to tell it which plot you're saving.
+```{r}
+ggsave("diamonds.png")
+```
+
+Within RStudio, there's one other choice for saving a plot: you can click on Export, and then "Save Plot As Image," and then select your width, height, filename, and so on.

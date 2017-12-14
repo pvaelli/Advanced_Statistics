@@ -1,0 +1,93 @@
+---
+title: 'Homework #4'
+output: html_document
+name: Patric Vaelli
+---
+
+###Name: 
+
+###Due: October 20, 11:59pm
+
+---
+
+Consider the relationship between population density and availability of a particular resource (e.g., forest floor cover for a ground nesting bird) in three regions: $reg_1$, $reg_2$, $reg_3$. We are particularly interested in region-specific differences of the density-resource relationship (i.e.,the interaction between resource availability and population for $pop_i \in reg_j$). 
+
+Question 1. Write out the equations for this model using an effects parameterization and define all variables. Look online for how to make the equations look professional using greek symbols and proper notation (2pts).
+
+# three regions (beta)
+# population density (y)
+# resource availability (delta)
+
+population_density = α + β(ij) + δ(ij)
+---
+
+2. Generate the data according to an effects parameterization (2pts).
+
+```{r}
+#Assume a balanced design simply for convenience of data generation.  Assume 20 populations are sampled for their density values in each of the three regions.
+n.groups = 3
+n.sample = 20
+
+#Total number of data points
+n = 
+
+#Specify a vector that acts as an indicator of region (1,2,3) for each population
+x =           # Create a vector with values of 1,2,3 by region
+reg = factor(x, labels=c("reg1","reg2","reg3")) #Translate the vector into factors
+
+#Assume the resource varies randomly between 45 - 70 at the location of each population
+resource =   
+
+#Build the design matrix of the interactive combination of reg and population
+Xmat = 
+
+#Chose the values for the parameters defined in Question 1 
+beta.vec =  c(-250, 150, 200, 6, -3, -4)
+
+#Generate the linear predictor
+lin.pred =  
+
+#Specify the residuals assuming that the SD = 10
+eps <-   
+
+#Put together the dependent data where the response is a combination of the deterministic and error terms
+density <-       
+
+#Print the design matrix for generating the data and the error values
+
+  
+```
+
+---
+
+3. Plot the data.  First, create a histogram of the density values.  Are they normally distributed?  Do the density data need to be normally distributed to run an ANCOVA? (1pt). Second, plot the population density relative to resouce level (1pt).  Use red, green, blue for reg1-reg3, respectively.  This graph should be publication quality (i.e., label axes, etc.)
+
+```{r}
+
+```
+
+---
+
+4. Fit the appropriate ANCOVA model and interpret the results.  Show the design matrix that R uses and the parameter estimates and their confidence intervals.  Compare the coefficients with the beta vector used to generate the parameters. What is the slope values for regions 1, 2, 3? (4pts)
+
+```{r}
+fit.ancova = 
+
+```
+
+---
+
+5. Add the fitted lines to the graph showing population density vs resource level (2pts).
+
+```{r, echo=FALSE}
+
+```
+
+---
+
+6. Refit the model with main effects only (no interaction between the resource and region).  Print the design matrix and interpret the results (use graphs).  What is the slope value?  Does this make sense? Examine the fit of the model to the data.  Would you conclude that the model fits the data? How does your interpretation of fit change with additional data simulations (i.e., simulate the data multiple times and fit both the main effects and interaction models)? (4pts)
+
+```{r}
+fit.main.ancova =
+ 
+``` 

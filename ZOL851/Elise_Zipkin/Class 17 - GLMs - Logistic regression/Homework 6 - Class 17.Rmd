@@ -1,0 +1,99 @@
+---
+title: 'Homework #6'
+output: html_document
+---
+
+###Name: 
+
+###Due: November 5, 11:59pm
+
+---
+
+Poisson ANCOVA - a Poisson regression with both discrete and continuous covariates. 
+
+We are interested in assessing the ectoparasite load in a dragonfly (a discrete variable), the Sombre Goldenring. We measure the parasite load in 100 dragonfly individuals in each of three mountain ranges (N, C, S). We are particularly interested in whether there are more or less little red mites on dragonflies of different sizes (expressed as wing length) and whether this relationship differs among the three mountain ranges.   
+
+
+1.  What is the model?  Include 1) the distribution to model the parasite load data, 2) the link function, and 3) the linear predictor. Define all parameters. (2 pts)
+
+---
+
+2.  Simulate the data. (3 pts)
+
+```{r}
+#Define the number of groups and the number of indviduals sampled within each group
+n.groups <- 
+n.sample <- 
+  
+#Define n, the total number of individuals sampled in all regions  
+n <-  
+
+#Create a numerical indicator describing the region where each individual was recovered
+x <-                                           # Population indicator 
+pop <- factor(x, labels = c("N", "C", "S")) 
+
+size <- runif(n, 4.5, 7.0)                 # Wing length/size (cm) 
+size1 <-                                   # Standardize the data
+
+#Build the design matrix
+Xmat <-  
+print(Xmat, dig = 2)  
+
+#Select the parameter values for each of the parameters that you defined in questions 1.
+#Assume the first parameter is intercept in N, the second and third are the differences in C and S
+#Assume the fourth parameter is slope effect in N, the fifth and sixth are the differences in slope in C and S
+beta.vec <- c(-1, 2, 3, 1, 0.5, -0.5)
+
+
+#Here's the recipe for assembling the mite counts in three steps: 
+#1. Add up all components of the linear model to get the linear predictor, which is the 
+#expected mite count on a (natural) log scale
+#Obtain the value of the linear predictor by matrix multiplication of the 
+#design matrix (Xmat) and the parameter vector (beta.vec) 
+
+lin.pred <-                            # Value of lin.predictor 
+
+#2. Exponentiate to get the actual value of the expected mite count  
+
+lambda <-                                # Poisson mean 
+
+#3. Add Poisson noise. 
+
+C <-                                  # Add Poisson noise 
+
+
+```
+
+---
+
+3.  What is the interpretation of the beta.vec?  Remember that the wing length data has been standardized and you used a link function to create the data. (2 pts)
+
+
+---
+
+4.  Plot the data.  Create three plots: 1) Histogram of the parasite counts; 2) Observed parasite load related to standardized wing length; 3) Observed parasite load related to true wing length.  Use red for N, green for C, and blue for S.  Differentiate the symbols between the regions. (2 pts)
+
+```{r, echo=FALSE}
+
+
+
+```
+
+---
+
+4.  Analyze the data with the GLM function.  Print out the covariate values and their confidence intervals.  Interpret the results.  How do the parameter estimates change if you use the standardized versus unstandardized size data for your analysis? USe the predict function to plot the expected ectoparasite load relative to wing size for each of the three regions  (standardized and regular scale). (6 pts)
+
+```{r}
+#Analysis using MLE
+#Analysis with standardized size (include parameter estimates and confidence values)
+fit.pois.ancova <-  
+
+
+#Analsis with non standardized size
+fit.pois.ancova2 <-
+
+
+#Interpretation and plots
+
+
+```

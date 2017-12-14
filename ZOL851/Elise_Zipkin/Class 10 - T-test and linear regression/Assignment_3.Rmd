@@ -1,0 +1,50 @@
+---
+title: 'Homework #3'
+output: html_document
+---
+
+Name:
+
+
+The t-test we did in class assumed that the variation among individuals in wingspan is the same in the population of males as in that of female peregrines but we know this is not the case. 
+
+Male wingspan is 70-85 cm and that for females as 95-115 cm. 
+Assuming Normal distributions, this implies means and standard deviations are: 
+77.5 and 2.5 cm for males 
+105 and 3 cm for females
+
+The question remains the same: Is there a difference in wingspan length among males and females.
+But a better model that more accurately captures differences in variance can be used to answer the question.
+
+Answer the series of questions below.  Each question is worth 2 points for 10 points total in this assignment.
+
+___________________________________________________________________________________
+
+**Question 1:**  Simulate the data for male and female peregrines.  Assume there are 60 females and 40 males.  Use the function `data.frame` to organize the data into columns with wingspan length and sex.
+
+```{r}
+
+```
+
+
+**Question 2:**  Plot the data using a boxplot (use ggplot).  Be sure to label the axes.
+```{r, echo=FALSE}
+
+```
+
+
+**Question 3:**  Perform a two-sided t-test assuming unequal variance and show the results.  
+```{r}
+
+```
+
+**Question 4:**  Write out the model for the t-test with unequal variance.  Note this does not require any programming.   
+
+
+
+**Question 5:**  Interpret the results and include the estimated mean for each population and the p-value that wingspan is different between males and females.
+```{r}
+
+
+```
+

@@ -1,0 +1,85 @@
+Confidence Intervals via Simulation
+===================================
+
+Let's start with the view from a sample from a population. 
+Say we sampled 150 individuals from a population
+```{r}
+new_sample <- rnorm(n=150, mean=72, sd=4)
+
+plot(density(new_sample, bw=1.5), ylim=c(0,0.15), xlim=c(55,90), lwd=2, xlab="new sample")
+
+curve(dnorm(x,mean=72,sd=4),55,90, add=T, col="red", lty=3, lwd=2) # The "true" population distribution
+
+
+#In general ~ 67% of observations fall within +/- SD of the mean for a Normal distribution....
+abline(v=mean(new_sample) - sd(new_sample), col="grey", lwd=2, lty=5)
+abline(v=mean(new_sample) + sd(new_sample), col="grey", lwd=2, lty=5)
+
+#And in general ~96% of observations fall within +/- 2 SD of the mean
+abline(v=mean(new_sample) - 2*sd(new_sample), col="grey", lwd=2, lty=6)
+abline(v=mean(new_sample) + 2*sd(new_sample), col="grey", lwd=2, lty=6)
+
+legend(x=82,y=0.1, col=c("black", "red", "grey","grey"), lwd=2, lty=c(1,3,5,6), legend=c("data", "theoretical", "1 SD", "2 SD"))
+```
+
+
+Remember that the sampling distribution of the means (or of other estimates) is approximately normal!!!!
+ 
+So if we generate a distribution of sampling means
+
+```{r}
+sample_means <- replicate(1000, expr=mean(rnorm(50,20,5)))
+plot(density(sample_means))
+ 
+abline(v=mean(sample_means) - 2*sd(sample_means), col="grey", lwd=2, lty=6)
+abline(v=mean(sample_means) + 2*sd(sample_means), col="grey", lwd=2, lty=6)
+```
+
+
+
+Understanding the classic definition of confidence intervals based on sampling theory
+
+Let us again repeatedly sample from a distribution with mean 20, and sd=5
+
+First a function for calculating standard error
+```{r}
+StandardError <- function(x) {sd(x)/sqrt(length(x))}
+```
+
+
+In the following function, we are going to generate a sample from a normal distribution with known mean and sd. We will then return the mean and standard error from that sample.
+```{r}
+SamplingFunction <- function(n=20, mean=20, sd=5) {
+   one.sample.from.population <- rnorm(n,mean=mean, sd=sd)
+ 	return(c(mean=mean(one.sample.from.population), SE = StandardError(one.sample.from.population)))
+ }
+```
+
+
+The ```t()``` is for transpose, which just transposes the matrix generated.
+
+```{r}
+samples_for_CI <- t(replicate(100,expr=SamplingFunction()))  # Replicating the sampler
+```
+
+Now we generate the approximate 95% confidence intervals.
+```{r}
+# 1.96 * standard error of the mean
+ci_95 <- 1.96*samples_for_CI[,2]
+lower <- samples_for_CI[,1] - ci_95
+upper <- samples_for_CI[,1] + ci_95
+
+replicates <- 1:length(samples_for_CI[,1]) # just creating a variable for the number of replicates.
+
+plot(samples_for_CI[,1] ~ replicates, ylab="sample values", 
+    ylim=c(min(lower), max(upper)), # Just setting the lower and upper values of the Y axis
+    main=" Demonstrating the meaning of (frequentist) confidence intervals")
+
+# generate Confidence Intervals
+for ( i in 1:length(samples_for_CI[,2])) {
+  lines(x=c(replicates[i],replicates[i] ), y=c(lower[i],upper[i]), lwd=2.75, col="grey")  
+}
+
+# Given that we know the true value for the mean (20 in this case, unless you changed it.) We can plot this on
+abline(h=20, col="red", lwd=3, lty=4) 
+```

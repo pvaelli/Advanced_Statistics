@@ -1,0 +1,795 @@
+In Class Assignment 3
+=====================
+
+Custom functions
+----------------
+
+We've encountered a number of functions before, from ```log()``` to ```class()``` to ```seq()``` to ```sort()``` - these are built-in functions
+You can also build your own functions too - like the one below that takes a number and doubles it:
+```{r}
+times2 = function(x) {
+  y = x * 2
+  return(y)
+}
+```
+
+
+
+Now you can call it and give it the argument you want to double
+```{r}
+times2(5)
+times2(10)
+```
+
+
+
+The way to define a function is ```FUNCTION.NAME = function(ARGS) {FUNCTION.CODE}```
+
+* FUNCTION.NAME is just any variable name
+* ARGS is any number of arguments you want to pass to the function (here we just used one - x)
+* FUNCTION.CODE is all the stuff you want the function to do - note that it must be within curly brackets
+
+Let's break it down even further, by starting with the function call.
+When you enter times2(10), it runs the code in times2 and sets the variable x to 10.
+It knows that x is what you want to set because we defined x in the arguments: ```times2 = function(x) {...}```
+
+It then starts running the code - the first thing it does is assign x * 2 to the variable y.
+Note that y is a temporary variable that only exists while the function is running.
+Since the function has now stopped, if you try to see what is in y, you'll get an error.
+
+
+The last line of the function tells it to give you the value that is stored in y.
+The return() command ends the function and returns whatever the stuff in the parentheses evaluates to.
+This is your way of getting information out of the function and back to the console, since all variables are temporary.
+
+Let's try another trivial example that adds two items:
+```{r}
+add = function(x,y) {
+  return(x + y)
+}
+
+add(1,2)
+add(5,5)
+```
+
+This function takes two arguments (x & y).
+You can define multiple arguments by putting commas between them as above.
+Also, note that return() first evaluates x + y, then gives it back to you.
+
+Since functions return a value, you can call functions on the output from other functions.
+For instance, the code below gives 10: 2*(4+1)
+```{r}
+times2(add(4,1))
+```
+
+
+You can view function code by typing in the function name without any arguments
+```{r}
+times2
+```
+
+This also works with some built-in functions, in case you're curious, like the function ```ls```
+
+```{r}
+ls
+```
+
+However, some built-ins are 'primitives' - they aren't written in R code so you can't see their guts.
+You will know a function is a primitive if there is .Primitive() when you try to view the function.
+```{r}
+sum
+```
+
+Functions Self Assessment
+-------------------------
+
+Write a function, named ```first```, that takes a numeric vector as its only argument and returns the first element of the vector.
+
+For instance, after running ```x <- first(c(1, 3, 5))```, ```x``` should be 1.
+```{r}
+# Your Code Here
+```
+
+Write a function named ```make_awesome``` that takes a string and adds " is Awesome!" to it.
+
+Example:
+```
+make_awesome("Everything") => "Everything is Awesome!"
+```
+Note, the ```paste``` function may be useful.
+```{r}
+# Your Code Here
+```
+
+Getting Help
+------------
+
+Now you have enough R knowledge to do a lot, but you still might get stuck trying to figure out a function.
+In that case, you don't need to panic, you just need the help() function.
+You can call help() on any built-in function and an explanation will show up in the 'Help' window.
+```{r}
+help(sum)
+```
+
+This tells you what arguments the function takes, and what it does
+
+You can also write this shorthand by starting with ?
+```{r}
+?sum
+```
+
+That works if you know the function but don't know how it works.
+But in many cases, you won't even know what you're looking for.
+For those times, there's ```??```.
+This searches through all functions and gives you a list of functions that have help pages containing your search.
+
+For instance, if you want to know how to do trigonometry:
+```{r}
+??trigonometry
+```
+
+From that you see base::Trig is a package - this means that Trig is part of the base R functions.
+So we move on:
+```{r}
+?Trig
+```
+And now we know all about cos, sin, tan, acos, asin, atan, and atan2 - huzzah!
+
+
+Matrices and Lists
+------------------
+
+We've learned how to store multiple pieces of data in vectors, but what if we want to structure the data into two dimensions...
+Or store multiple types of data in one variable?
+For this we have matrices and lists.
+
+Matrices are just 2-dimensional vectors. The way to make one is the function: ```matrix(data,nrow,ncol)```.
+
+* Data is a vector of values that gets read off into the columns, one by one
+* nrow and ncol tell R how to shape the matrix
+
+For instance, you can create a matrix with the numbers 1 to 6 and 2 rows, 3 columns with:
+```{r}
+matrix(1:6,nrow=2,ncol=3)
+```
+
+Note how the numbers count down the columns.
+This is also different from the matrix with the same data, but 3 rows and 2 columns:
+```{r}
+matrix(1:6,nrow=3,ncol=2)
+```
+
+If you want the data to read across the rows instead of down the columns, set 'byrow' to TRUE
+```{r}
+matrix(1:6,nrow=3,ncol=2,byrow=TRUE)
+```
+
+
+Note that the length of the vector must have a length equal to nrow * ncol.
+If not, can you guess what happens?
+(Hint: it starts with 'r', ends with 'ecycling', and is bad)
+
+Now lets store a matrix from 1-9
+```{r}
+junk.mat = matrix(1:9,nrow=3,ncol=3,byrow=TRUE)
+junk.mat
+```
+
+We can access individual matrix items by index, similar to the way we do for vectors.
+However, rather than one index, you should use two: [row,col]
+```{r}
+junk.mat[2,1] # Should be 4; second row, first column
+junk.mat[3,2] # Should be 8; third row, second column
+```
+
+
+
+Accessing by individual indices also work (it flattens the matrix back into a vector), but can get confusing.
+You can also take matrix slices by ranges, just like for vectors
+```{r}
+junk.mat[1:2,2:3] # Gets the upper right square
+```
+
+And you can also access individual rows or columns, using the index [row#,] or [,col#]
+```{r}
+junk.mat[1,] # Gives you the first row
+junk.mat[,3] # Gives you the third column
+junk.mat[1:2,] # Gives you rows 1 and 2
+```
+
+You can assign back to a matrix by index
+
+```{r}
+junk.mat[1,3] = 10 # Change one item
+junk.mat
+junk.mat[,2] = c(11,12,13) # Change a whole column
+junk.mat
+```
+
+Finally, let's say you also want to find the shape of the matrix.
+We can't just use the length command... it works, but only gives us the total number of items in the matrix
+```{r}
+length(junk.mat)
+```
+
+
+Instead, we need to use the dim() command.
+This gives us a vector of two numbers... first the number of rows, then the number of columns
+```{r}
+dim(junk.mat)
+```
+
+Lists are a way of storing multiple vectors or data types into one data structure.
+Remember, if you try to store numbers and characters together in a vector, it changes the numbers to characters.
+```{r}
+c(1,"A",2)
+```
+
+Likewise, you can't store vectors within a vector:
+```{r}
+c(1,c(2,3),4)
+```
+
+But with lists you can do both of these things
+```{r}
+list(1,"A",2)
+list(1,c(2,3),4)
+```
+
+These look a little funny... that's because a list stores a number of different vectors.
+The vector at [[1]] above is just 1, the vector at [[2]] is 2,3, etc.
+Let's store that into a variable
+```{r}
+junk.list = list(1,c(2,3),4)
+```
+
+Accessing items out of a list is a little different - you must use double brackets if you want the data
+```{r}
+junk.list[[1]]
+junk.list[[2]]
+```
+
+If you use single brackets, it just gives you a list of length 1 back - which you can't use as a number
+```{r}
+junk.list[1]
+#junk.list[1] + 2 # ERROR!
+junk.list[[1]] + 2 # Okay!
+class(junk.list[[1]]) # A numeric - we pulled out the vector
+class(junk.list[1])   # A list - we just got that element of the list
+```
+
+We can also create names lists within the list function:
+```{r}
+junk.list = list('A' = 1, 'B' = c(2,3), 'C' = 4)
+junk.list
+names(junk.list)
+```
+
+We can now access items from that list using the name
+```{r}
+junk.list[['A']]
+```
+
+But there's also a shortcut to the names using $ rather than the double brackets:
+```{r}
+junk.list$A
+```
+
+We can also change members of a list, or even elements of list members:
+```{r}
+junk.list$A = c(3,5) # Replaced element A with a vector
+junk.list
+
+junk.list[3] = 10 # Replaced the third element (C) with 10
+junk.list
+
+junk.list$B[1] = 12 # Replaced the first number in B with 12
+junk.list
+
+junk.list[['B']][2] = 16 # Replaced the second number in B with 16
+junk.list
+```
+
+
+You can also add new items to a list by assigning to a new name within the list
+```{r}
+junk.list$newitem = c('Hi','there')
+junk.list
+```
+
+Or remove items from a list by assigning NULL to an existing name.
+NULL is a special variable that tells R that nothing is there
+```{r}
+junk.list$B = NULL
+junk.list
+```
+
+Matrices and Lists Self Assessment
+----------------------------------
+Please describe the differences between the following operators and when they would be used:
+
+1) Single, square brackets ```[]```
+2) Double, square brackets ```[[]]```
+3) Dollar sign ```$```
+4) Quotation marks ```""```
+5) Parentheses ```()```
+
+Make a matrix that is a multiplication table up to four
+```{r}
+#Your Code Here
+```
+
+Modify the original matrix to remove the one's row and column.
+```{r}
+#Your Code Here
+```
+
+Make a list of classes your are in, named ```current_classes```, and a list of classes
+you want to take in the Spring, named ```future_classes```.
+```{r}
+#Your Code Here
+```
+
+Make a list of lists composed of the two previous lists, named ```classes```. 
+Use list names so that this line would work: ```classes$current_classes[[1]] ```
+```{r}
+#Your Code Here
+```
+
+Data frames
+-----------
+
+Now we move on to data frames - this is the way R stores most datasets.
+Effectively, it is a list of vectors, but all of the vectors must be of equal length.
+You can think of these as storing one data observation per row.
+Each different type of information you have on those observations make up the columns.
+Let's look at a builtin data frame - mtcars - as an example.
+```{r}
+mtcars
+```
+
+Each of the rows is named with the car type. 
+Then each of the columns has different information about those cars (avg mpg, # of cylinders, etc.).
+This data is rectangular - the number of rows is equal for every column
+
+You can build a data frame just like a list:
+```{r}
+data.frame('Name' = c('A','B','C'), 'Num' = c(1,2,3), 'Logic' = c(TRUE,FALSE,TRUE))
+```
+
+Note how much easier this is to look at than a list with the same data.
+It's easy to tell in a data frame which records go together - not so much in a list
+```{r}
+list('Name' = c('A','B','C'), 'Num' = c(1,2,3), 'Logic' = c(TRUE,FALSE,TRUE))
+```
+
+But note that if the vectors aren't equal length, R doesn' like it:
+```{r}
+#data.frame('Name' = c('A','B'), 'Num' = c(1,2,3), 'Logic' = c(TRUE,FALSE,TRUE)) # Note Name has 2 items only
+```
+
+And if you have a rectangular list, you can transform it into a data frame easily
+```{r}
+l = list('Name' = c('A','B','C'), 'Num' = c(1,2,3), 'Logic' = c(TRUE,FALSE,TRUE))
+data.frame(l)
+```
+
+So let's store that data frame:
+```{r}
+junk.df = data.frame(l)
+```
+
+In addition to typing the name of a data frame in the console, RStudio let's us look at them in a window.
+Remeber, you can click on the data frame in the Workspace tab, or use the ```View()``` command
+
+We can also access data just like we did for lists:
+```{r}
+junk.df$Num
+junk.df[[3]]
+```
+
+Or individual items from the vectors:
+```{r}
+junk.df$Num[1] # 1: the first element of Num
+```
+
+Because all the vectors are the same length, we can also use matrix indices to grab data.
+However, it's advised not to use this - it's hard to tell exactly what you're getting back
+```{r}
+junk.df[1,2] # 1: the first row and second column (in this case Num)
+```
+
+Finally, we can access individual rows using matrix indices:
+```{r}
+junk.df[1,] # The first data observation
+junk.df[2:3,] # The second and third data observation
+```
+
+We can also create data frames with row names by giving it the row.names argument
+```{r}
+junk.df2 = data.frame('Name' = c('A','B','C'), 'Num' = c(1,2,3), 'Logic' = c(TRUE,FALSE,TRUE),
+                      row.names = c('Elem.1','Elem.2','Elem.3'))
+junk.df2
+```
+
+Now we can access data by names:
+```{r}
+junk.df2['Elem.1','Num']
+```
+
+Or observations by name
+```{r}
+junk.df2['Elem.1',]
+```
+
+We can get these names back by using the ```dimnames()``` command.
+This provides a list of names for each dimension
+```{r}
+dimnames(junk.df2)
+```
+
+If we use names(), we just get the column names
+```{r}
+names(junk.df2)
+```
+
+We can also set the dimnames just like we would a list:
+```{r}
+dimnames(junk.df2) = list(c('E1','E2','E3'),c('Name','Number','Logic'))
+junk.df2
+```
+
+Or just the rownames, by changing the second item in the list:
+```{r}
+dimnames(junk.df2)[[1]] = c('El1','El2','El3')
+```
+
+Can also add new data to data frames, just by assigning it to an empty column
+```{r}
+junk.df2$NewCol = c(10,12,14)
+junk.df2
+```
+
+And can add transformed data back to the table:
+```{r}
+junk.df2$Times2 = junk.df2$Number * 2
+junk.df2
+```
+
+If you want to access only subsets of the observations based on conditionals, there are two ways of doing this.
+First, you can have the conditional in the first part of the index.
+```{r}
+junk.df2[junk.df2$Logic == TRUE,]
+```
+
+Or you can just use the ```subset()``` command.
+This takes two arguments - the data frame and the conditional.
+Note that you don't need to tell ```subset()``` which data frame you are drawing the columns for.
+It assumes that you are using the same data frame you are subsetting.
+```{r}
+subset(junk.df2,Logic == TRUE)
+```
+
+And just like conditionals from simulation, you can use multiple conditionals
+```{r}
+subset(junk.df2,Logic == TRUE & Number == 3)
+```
+
+This is very useful when you want to:
+
+1) Review/analyze only parts of your data (e.g., only subjects in Condition 1)
+2) Eliminate outliers or inappropriate data points
+
+In either case, you can store the reduced table into another variable for easy access
+
+```{r}
+junk.df2.reduced = subset(junk.df2, Logic == TRUE)
+junk.df2.reduced
+```
+
+The final bit of table access we'll go through involve the ```with()``` and ```attach()``` commands.
+
+Sometimes you'll be accessing a number of variables in the same data frame at once.
+It can get long and tedious to tell R that you are accessing the same data frame over and over.
+So the with() command tells R that it should just assume the variables you call or from that data frame.
+This takes two arguments: the data frame, and the expression you want to run.
+
+For instance, this adds the Number data to the NewCol data
+
+```{r}
+with(junk.df2, Number + NewCol)
+```
+
+This is identical to typing:
+```{r}
+junk.df2$Number + junk.df2$NewCol
+```
+
+This gets very useful when you want to access only a subset of the table:
+```{r}
+with(subset(junk.df2,Logic == TRUE), Number + NewCol)
+```
+
+And then there are other times that you'll be working with one data frame exclusively.
+In this case, you might be using those variables on every line, but don't want to write with() over and over.
+For this, there's the attach command, which 'attaches' all of the data from the data frame to the console.
+```{r}
+attach(junk.df2)
+```
+
+Once you've attached a data frame, you can access the data without having to tell R the frame
+```{r}
+Number
+NewCol
+Number + NewCol
+```
+
+However, be careful - if you change any of the data, it will create a copy and won't affect the data frame
+```{r}
+Number[2] = 10
+Number
+junk.df2$Number
+```
+
+Note that 'Number' now shows up in your workspace
+
+Finally, when you're done with the data frame, you can detach() it.
+This will prevent default access to the data, and is good clean-up practice.
+```{r}
+detach(junk.df2)
+#NewCol #This will give an error as it is detached
+```
+
+But any copied/changed data will remain
+```{r}
+Number
+```
+
+A final note on data frames... sometimes you want to know what type of data is stored in each column.
+For this, you can use the ```str()``` command
+```{r}
+str(junk.df2)
+```
+
+Note that this tells you what each collumn is (factor, numeric, logical, etc.) and the first few observations.
+This can be very useful if you're given a new dataset and want to know what it contains.
+
+You might also want to get just the first few records.
+For this you want to use the head() command - for the first six.
+This won't have an effect with junk.df2 (there are only 3 records).
+But look at mtcars
+```{r}
+mtcars
+head(mtcars)
+```
+
+It's much easier to get a quick readout with 'head'
+
+Dataframes Self Assessment
+--------------------------
+Show me the rows of ```mtcars``` that have cars with over 20 mpg (miles per gallon) and more that 4 cyl(inders).
+
+
+
+Input/Output
+============
+
+In many cases you'll want to read and write data from files.
+R makes this easy for you with the read.table() and write.table() commands.
+
+To open up a file, first you need to make sure you're in the correct 'working directory'.
+This tells the computer where to look for the files.
+To learn where your working directory is set, you can use the ```getwd()``` command.
+```{r}
+getwd()
+```
+
+You can then use the setwd() command with the path argument to set it to where you want to go.
+But there are much easier ways of doing this in RStudio.
+
+First, you can use the Files tab.
+Just go to the directory you want to access, then click 'More' and select 'Set As Working Directory'.
+If you can see the file you want to open in the Files tab, then you're in the right place.
+
+Next, you can select it manually.
+Go to the 'Session' menu, select 'Set Working Directory' and 'Choose Directory'.
+You will be able to search through your files to find the right directory.
+
+Finally, if you are working on RScript and your data is in the same directory, this is easy.
+Just go to the 'Session' menu, select 'Set Working Directory' and 'To Source File Location'.
+
+Let's start with the F&D_Data.csv file
+Download it then click on it in the Files pane
+You'll see it's just some text that looks like:
+
+    A,20,1.5
+    A,30,0.5
+    B,40,2
+    B,50,5.5
+
+This is a typical csv file - different columns of data separated by commas, with each observation on a new line.
+You can read this in with the read.table() command
+Note that you must set the 'sep' argument to ',' to tell it that commas count as data breaks
+```{r}
+read.table('F&D_Data.csv',sep = ',')
+```
+
+The columns aren't named - but you can do this with the col.names argument
+```{r}
+read.table('F&D_Data.csv',sep = ',',col.names = c('Cond','N1','N2'))
+```
+
+And can name the rows using the row.names argument
+```{r}
+read.table('F&D_Data.csv',sep = ',',col.names = c('Cond','N1','N2'),row.names = c('E1','E2','E3','E4'))
+```
+
+We can also select only some of the rows.
+If you want a certain number of rows, you can use the nrows argument to tell R how many observations you want.
+It will only read in the first n rows of the file.
+```{r}
+read.table('F&D_Data.csv',sep = ',',col.names = c('Cond','N1','N2'),nrows = 2)
+```
+
+Now let's take a look at the 'F&D_Data_v2.csv' file.
+This is exactly like the Data1 file, but column names are already there.
+If you just try to read in the table, it will think that the headers are part of the data. 
+(Note: recent versions of R are sometimes smart enough to recognize headers,
+but you shouldn't depend on this.)
+```{r}
+read.table('F&D_Data_v2.csv',sep = ',')
+```
+
+Instead, we want to use the 'header' argument to tell R that the first line is actually a header.
+This sets the column names to whatever is in the first line.
+```{r}
+read.table('F&D_Data_v2.csv',sep=',',header = TRUE)
+```
+
+
+A shortcut to all of this is also the ```read.csv()``` command.
+This is exactly like the read.table command, except it assumes that ```sep=','``` and ```header=TRUE```.
+```{r}
+read.csv('F&D_Data_v2.csv')
+```
+
+So now let's store the data:
+
+```{r}
+sample.data = read.csv('F&D_Data_v2.csv')
+sample.data
+```
+
+It's then a data frame - we can do anything we want to it within R now.
+```{r}
+sample.data$N3 = sample.data$N1 * 4
+sample.data
+```
+
+
+But when we're done, we might want to write our data frame back out to a file.
+For this, we have the write.table() command.
+This needs two arguments, the data frame and the file name.
+```{r}
+write.table(sample.data,'F&D_Data_Output.csv')
+```
+
+
+But open it up - this looks a bit messy
+First, we didn't give is a sep argument, so it assumed spaces should separate columns.
+```{r}
+write.table(sample.data,'F&D_Data_Output.csv',sep=',')
+```
+
+If you open it up again, you'll note that the original data has been overwritten.
+We can change this using by setting the append argument to TRUE.
+This tells R not to overwrite the file, but instead to write to the end of the file.
+```{r}
+write.table(sample.data,'F&D_Data_Output.csv',sep=',',append=TRUE)
+```
+
+However, you'll see a warning when you do that - it tells you column names are appended.
+Usually if you're just adding data, you don't want to rewrite the collumn names.
+You can turn this off by setting col.names to FALSE.
+```{r}
+write.table(sample.data,'F&D_Data_Output.csv',sep=',',append=TRUE, col.names = FALSE)
+```
+
+Let's clear all of this and just get the basic data into this file:
+
+```{r}
+write.table(sample.data,'F&D_Data_Output.csv',sep=',')
+```
+
+Also, like ```read.csv``` was shorthand for ```read.table```, there is a ```write.csv``` command.
+This is almost exactly like setting sep=',' in write.table
+```{r}
+write.csv(sample.data,'F&D_Data_Output.csv')
+```
+
+But open these two files side-by-side and you'll notice one important difference.
+There is an extra "", at the start of the write.csv file.
+If you tried opening the first output in Excel, the collumn names would be mismatched with the data.
+It would put 'Cond' above the element names.
+With that extra bit from write.csv, the element names header will be blank and everything else will match.
+
+Finally, we can turn off writing the element names by setting row.names to FALSE
+```{r}
+write.csv(sample.data,'F&D_Data_Output.csv',row.names=FALSE)
+```
+
+Input/Output Self Assessment
+----------------------------
+
+Scan through the documentation for ```read.table```. What does the ```skip``` argument do and when might you use it?
+
+
+
+Factors
+-------
+
+In the first lesson, we talked about different types of singluar data that could be stored in variables.
+These could be numbers, character strings, or logical values.
+Now it's time to learn about another type of data R uses a lot: factors.
+Factors come up often when importing data tables.
+For instance, what happens if we look at the class of 'Cond' in sample.data?.
+```{r}
+class(sample.data$Cond)
+```
+
+Notice it says "factor".
+If you look in the variable, it looks slightly different than a character string...
+Note the 'Levels'.
+```{r}
+sample.data$Cond
+```
+
+So why use factors instead of characters?
+Factors are a way for R to store different conditions in a way that's easy to use and save space.
+For instance, let's say you're running an experiment with three drugs, a control group, and 20 subjects.
+You could store these conditions a character strings.
+```{r}
+cond.char = rep(c('DrugA','DrugB','DrugC','Control'),each = 5)
+```
+
+Okay... that works and differentiates the conditions, but it takes up a lot of space.
+Computers need more memory to store character strings than numbers.
+This isn't really a problem with 20 subjects, but some datasets can have millions of records.
+That space would add up fast.
+
+So how about we store them as a number: 1,2,3,4?
+```{r}
+cond.num = rep(c(1,2,3,4),each=5)
+```
+
+Well, that saves space, but it's not obvious which condition is which.
+Did you put control first or last? That could make a huge difference if you forget months down the line!
+
+Factors are a way of splitting the difference here.
+They store information as numbers, but associate those numbers with 'levels'.
+We can make factors by using the ```as.factor()``` command, but usually they come about from reading data in.
+```{r}
+cond.fact = as.factor(cond.char)
+```
+
+When you print out the factor conditions, it looks like the character list.
+But at the bottom, you see something that says 'Levels: Control DrugA DrugB DrugC'.
+If you want to get the levels of a factor, you can use the levels() command:
+```{r}
+levels(cond.fact)
+```
+
+You shouldn't worry too much about factors beyond this.
+This is the default way categorical data is read into R.
+Most of the time, they will act just like character strings when you are doing analysis.
+However, sometimes this means we will need to use special commands to deal with factors.
+We'll deal with those commands as we come to them.
+
+Factors Self Assessment
+-----------------------
+
+Does it make sense to add factors together? 
+
+What about adding numbers to factors? 
+
+What does R do if you try?
